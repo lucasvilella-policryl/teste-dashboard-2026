@@ -22,12 +22,12 @@
             --success: #22c55e;
             
             /* Cores de Departamento (Omie Style) */
-            --dept-crm: #3b82f6; /* Azul */
-            --dept-vendas: #f97316; /* Laranja */
-            --dept-supply: #10b981; /* Verde */
-            --dept-financeiro: #22c55e; /* Verde-Claro */
-            --dept-rh: #7c3aed; /* Roxo */
-            --dept-admin: #64748b; /* Cinza */
+            --dept-crm: #3b82f6; 
+            --dept-vendas: #f97316; 
+            --dept-supply: #10b981; 
+            --dept-financeiro: #22c55e; 
+            --dept-rh: #7c3aed; 
+            --dept-admin: #64748b; 
 
             /* Light Mode - Estilo Profissional Clean */
             --bg-primary: #ffffff;
@@ -37,7 +37,7 @@
             --text-secondary: #64748b;
             --border: #e2e8f0;
             --sidebar-bg: #1e293b;
-            --card-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Sombra mais leve */
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
         [data-theme="dark"] {
@@ -57,6 +57,7 @@
             color: var(--text-primary);
             transition: background 0.3s, color 0.3s;
             line-height: 1.6;
+            overflow: auto; 
         }
 
         /* UTILITÁRIOS */
@@ -94,7 +95,6 @@
             text-align: center;
         }
         
-        /* Estilo para a grade de login de role */
         .role-selector {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -123,7 +123,6 @@
             background: var(--bg-tertiary);
             color: var(--text-primary);
         }
-
 
         /* DEPARTAMENTOS SCREEN (Omie Style) */
         .departamentos-container {
@@ -166,7 +165,7 @@
             transition: all 0.3s;
             color: var(--text-primary);
             box-shadow: var(--card-shadow);
-            border-left: 6px solid var(--dept-admin); /* Default */
+            border-left: 6px solid var(--dept-admin); 
         }
         
         .departamento-card.crm { border-left-color: var(--dept-crm); }
@@ -211,7 +210,6 @@
             color: var(--text-secondary);
         }
 
-
         /* SYSTEM APP - ESTOQUE */
         .app-container {
             display: flex;
@@ -219,7 +217,6 @@
             background: var(--bg-secondary);
         }
         
-        /* ... (O restante do CSS do app Estoque é mantido igual à versão anterior) ... */
         .sidebar {
             width: 260px;
             background: var(--sidebar-bg);
@@ -509,7 +506,7 @@
             box-shadow: var(--card-shadow);
             border-left: 4px solid var(--primary);
         }
-
+        
         .stat-card.blue { border-left-color: var(--secondary); }
         .stat-card.yellow { border-left-color: var(--warning); }
         .stat-card.red { border-left-color: var(--danger); }
@@ -627,12 +624,15 @@
         .badge-danger { background: #fee2e2; color: #991b1b; }
         .badge-blue { background: #dbeafe; color: #1e40af; }
         .badge-gray { background: #f3f4f6; color: #4b5563; }
+        .badge-purple { background: #e9d5ff; color: #6b21a8; }
 
         [data-theme="dark"] .badge-success { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
         [data-theme="dark"] .badge-warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
         [data-theme="dark"] .badge-danger { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
         [data-theme="dark"] .badge-blue { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
         [data-theme="dark"] .badge-gray { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
+        [data-theme="dark"] .badge-purple { background: rgba(124, 58, 237, 0.2); color: #a78bfa; }
+
 
         .form-card {
             background: var(--bg-primary);
@@ -698,6 +698,10 @@
             color: var(--text-primary);
         }
 
+        .icon-btn.delete {
+            color: var(--danger);
+        }
+        
         /* Modal para ampliar imagem */
         .modal {
             display: none;
@@ -743,37 +747,13 @@
             to { opacity: 1; }
         }
         
-        /* Estilo para a grade de login de role */
         .role-selector {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
             margin-bottom: 20px;
         }
-        .role-btn {
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: var(--bg-secondary);
-            color: var(--text-secondary);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-        }
-        .role-btn.active-role {
-            border-color: var(--primary);
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
-        }
-        .role-btn:hover:not(.active-role) {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-
-
+        
         @media (max-width: 768px) {
             .sidebar { width: 80px; }
             .sidebar-header h1, .sidebar-header p, .nav-item span:last-child, .user-details { display: none; }
@@ -793,6 +773,7 @@
     </div>
 
     <script>
+        // ==================== STORAGE ====================
         const storage = {
             get(key) {
                 try {
@@ -809,14 +790,23 @@
                 } catch (error) {
                     return false;
                 }
+            },
+            remove(key) {
+                try {
+                    localStorage.removeItem(key);
+                    return true;
+                } catch (error) {
+                    return false;
+                }
             }
         };
 
+        // ==================== STATE ====================
         let state = {
             currentUser: null,
             currentView: 'login',
             activeTab: 'dashboard',
-            produtos: [],
+            produtos: [], 
             movimentacoes: [],
             responsaveis: [],
             linhas: [],
@@ -829,10 +819,11 @@
             editingItem: null,
             theme: 'light',
             tipoMovimento: 'entrada',
-            loginRole: 'admin' // Novo estado para o role selecionado no login
+            loginRole: 'admin' 
         };
 
-        function init() {
+        // ==================== INIT DATA ====================
+        function initData() {
             let usuarios = storage.get('policryl-usuarios');
             if (!usuarios) {
                 usuarios = [
@@ -848,7 +839,9 @@
                 produtos = [
                     { id: '1', sku: 'POL-001', descricao: 'Tinta Acrílica Branca 18L', linha: 'Tintas', quantidade: 150, estoqueMinimo: 50, valorCusto: 89.90, valorVenda: 159.90, foto: 'https://via.placeholder.com/150/f97316/ffffff?text=POL-001', ativo: true, visivel: true, ultimaAtualizacao: new Date().toISOString() },
                     { id: '2', sku: 'POL-002', descricao: 'Verniz Acrílico 3.6L', linha: 'Vernizes', quantidade: 35, estoqueMinimo: 40, valorCusto: 45.90, valorVenda: 89.90, foto: 'https://via.placeholder.com/150/3b82f6/ffffff?text=POL-002', ativo: true, visivel: true, ultimaAtualizacao: new Date().toISOString() },
-                    { id: '3', sku: 'POL-003', descricao: 'Primer Acrílico 18L (Oculto)', linha: 'Primers', quantidade: 80, estoqueMinimo: 30, valorCusto: 79.90, valorVenda: 139.90, foto: 'https://via.placeholder.com/150/ef4444/ffffff?text=POL-003', ativo: true, visivel: false, ultimaAtualizacao: new Date().toISOString() }
+                    { id: '3', sku: 'POL-003', descricao: 'Primer Acrílico 18L (Oculto)', linha: 'Primers', quantidade: 80, estoqueMinimo: 30, valorCusto: 79.90, valorVenda: 139.90, foto: 'https://via.placeholder.com/150/ef4444/ffffff?text=POL-003', ativo: true, visivel: false, ultimaAtualizacao: new Date().toISOString() },
+                    { id: '4', sku: 'POL-004', descricao: 'Massa Acrílica 25kg', linha: 'Massas', quantidade: 25, estoqueMinimo: 20, valorCusto: 25.00, valorVenda: 45.00, foto: 'https://via.placeholder.com/150/10b981/ffffff?text=POL-004', ativo: true, visivel: true, ultimaAtualizacao: new Date().toISOString() },
+                    { id: '5', sku: 'POL-005', descricao: 'Selador Acrílico 18L', linha: 'Seladores', quantidade: 15, estoqueMinimo: 25, valorCusto: 70.00, valorVenda: 110.00, foto: 'https://via.placeholder.com/150/7c3aed/ffffff?text=POL-005', ativo: true, visivel: true, ultimaAtualizacao: new Date().toISOString() }
                 ];
                 storage.set('policryl-produtos', produtos);
             }
@@ -857,12 +850,15 @@
             state.movimentacoes = storage.get('policryl-movimentacoes') || [];
             state.responsaveis = storage.get('policryl-responsaveis') || [
                 { id: '1', nome: 'João', sobrenome: 'Silva', departamento: 'Estoque', ativo: true },
-                { id: '2', nome: 'Maria', sobrenome: 'Santos', departamento: 'Comercial', ativo: true }
+                { id: '2', nome: 'Maria', sobrenome: 'Santos', departamento: 'Comercial', ativo: true },
+                { id: '3', nome: 'Pedro', sobrenome: 'Costa', departamento: 'Qualidade', ativo: true }
             ];
             state.linhas = storage.get('policryl-linhas') || [
                 { id: '1', codigo: 'TIN', nome: 'Tintas' },
                 { id: '2', codigo: 'VER', nome: 'Vernizes' },
-                { id: '3', codigo: 'PRI', nome: 'Primers' }
+                { id: '3', codigo: 'PRI', nome: 'Primers' },
+                { id: '4', codigo: 'MAS', nome: 'Massas' },
+                { id: '5', codigo: 'SEL', nome: 'Seladores' }
             ];
 
             state.theme = storage.get('policryl-theme') || 'light';
@@ -872,9 +868,9 @@
             if (state.currentUser) {
                 state.currentView = 'departamentos';
             }
-            render();
         }
 
+        // ==================== HELPERS E UTILS ====================
         function toggleTheme() {
             state.theme = state.theme === 'light' ? 'dark' : 'light';
             document.body.setAttribute('data-theme', state.theme);
@@ -930,7 +926,6 @@
             state.loginRole = role;
             const emailInput = document.getElementById('login-email');
             
-            // Define credenciais padrão para facilitar o teste
             if (role === 'admin') {
                 emailInput.value = 'lucas.vilella@policryl.com.br';
             } else if (role === 'operador') {
@@ -941,21 +936,14 @@
             document.getElementById('login-password').value = 'password';
             render();
         }
-
-        function showAlert(message, type = 'success') {
-            const container = document.getElementById('alert-container');
-            if (container) {
-                container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-                setTimeout(() => { container.innerHTML = ''; }, 3000);
-            }
-        }
-
+        
         function abrirDepartamento(dept) {
             if (dept === 'estoque') {
                 state.currentView = 'estoque';
+                state.activeTab = 'dashboard';
                 render();
             } else {
-                showAlert('Módulo em desenvolvimento', 'error');
+                showAlert(`Módulo ${dept.toUpperCase()} em desenvolvimento`, 'error');
             }
         }
 
@@ -969,6 +957,17 @@
             state.editingItem = null;
             render();
         }
+        
+        function openImageModal(imgSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.classList.add('active');
+            modalImg.src = imgSrc;
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').classList.remove('active');
+        }
 
         function getStatusProduto(produto) {
             if (produto.quantidade < produto.estoqueMinimo) return 'abaixo';
@@ -977,7 +976,11 @@
         }
 
         function getStatusLabel(status) {
-            const labels = { 'abaixo': 'Abaixo do Mínimo', 'proximo': 'Próximo do Mínimo', 'ok': 'OK' };
+            const labels = {
+                'abaixo': 'Abaixo do Mínimo',
+                'proximo': 'Próximo do Mínimo',
+                'ok': 'OK'
+            };
             return labels[status] || 'OK';
         }
 
@@ -989,7 +992,20 @@
             const ok = produtosVisiveis.filter(p => getStatusProduto(p) === 'ok').length;
             const proximo = produtosVisiveis.filter(p => getStatusProduto(p) === 'proximo').length;
             const abaixo = produtosVisiveis.filter(p => getStatusProduto(p) === 'abaixo').length;
-            return { total, ativos, inativos, ok, proximo, abaixo };
+
+            return { total, ativos, inativos, ok, proximo, abaixo, produtosVisiveis: state.produtos.length };
+        }
+
+        function showAlert(message, type = 'success') {
+            const container = document.getElementById('alert-container');
+            container.innerHTML = `
+                <div class="alert alert-${type}">
+                    <span>${message}</span>
+                </div>
+            `;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 3000);
         }
 
         function getProdutosFiltrados() {
@@ -1016,18 +1032,7 @@
                 return 0;
             });
         }
-
-        function openImageModal(imgSrc) {
-            const modal = document.getElementById('imageModal');
-            const modalImg = document.getElementById('modalImage');
-            modal.classList.add('active');
-            modalImg.src = imgSrc;
-        }
-
-        function closeModal() {
-            document.getElementById('imageModal').classList.remove('active');
-        }
-
+        
         function handleFileSelect(e) {
             const file = e.target.files[0];
             if (file) importarPlanilha(file);
@@ -1061,11 +1066,11 @@
                             valorVenda: parseFloat((values[6] || '0').replace(',', '.')) || 0,
                             ativo: values[7] ? values[7].toLowerCase().includes('sim') : true,
                             visivel: values[8] ? values[8].toLowerCase().includes('sim') : true,
-                            foto: values[9] ? values[9].trim() : '',
+                            foto: values[9] ? values[9].trim() : '', 
                             ultimaAtualizacao: new Date().toISOString()
                         };
                         
-                        if (produto.sku && produto.descricao) {
+                        if (produto.sku && produto.descricao && !state.produtos.some(p => p.sku === produto.sku)) {
                             state.produtos.push(produto);
                             importados++;
                         }
@@ -1083,10 +1088,54 @@
         }
 
         function exportarExcel() {
-            // Lógica de exportação...
+            const produtosFiltrados = getProdutosFiltrados();
+            const isAdmin = state.currentUser.role === 'admin';
+            
+            const headers = isAdmin 
+                ? ['SKU', 'Descrição', 'Linha', 'Quantidade', 'Mínimo', 'Custo', 'Venda', 'Status', 'Visível', 'Ativo', 'Última Atualização']
+                : ['SKU', 'Descrição', 'Linha', 'Quantidade', 'Mínimo', 'Status', 'Visível', 'Ativo', 'Última Atualização'];
+
+            const csvData = produtosFiltrados.map(p => {
+                if (isAdmin) {
+                    return [
+                        p.sku,
+                        p.descricao,
+                        p.linha,
+                        p.quantidade,
+                        p.estoqueMinimo,
+                        p.valorCusto.toFixed(2).replace('.', ','),
+                        p.valorVenda.toFixed(2).replace('.', ','),
+                        getStatusLabel(getStatusProduto(p)),
+                        p.visivel ? 'Sim' : 'Não',
+                        p.ativo ? 'Sim' : 'Não',
+                        new Date(p.ultimaAtualizacao).toLocaleDateString('pt-BR')
+                    ];
+                }
+                return [
+                    p.sku,
+                    p.descricao,
+                    p.linha,
+                    p.quantidade,
+                    p.estoqueMinimo,
+                    getStatusLabel(getStatusProduto(p)),
+                    p.visivel ? 'Sim' : 'Não',
+                    p.ativo ? 'Sim' : 'Não',
+                    new Date(p.ultimaAtualizacao).toLocaleDateString('pt-BR')
+                ];
+            });
+            
+            const csv = [headers.join(';'), ...csvData.map(row => row.join(';'))].join('\n');
+
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `estoque_policryl_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
             showAlert('Relatório exportado com sucesso!');
         }
 
+
+        // ==================== ACTIONS ====================
         function setTipoMovimento(tipo) {
             state.tipoMovimento = tipo;
             const btnEntrada = document.getElementById('tipo-entrada');
@@ -1101,7 +1150,45 @@
                 showAlert('Acesso negado: Leitores não podem registrar movimentações.', 'error');
                 return;
             }
-            // ... (Lógica de salvar movimentação)
+            const sku = document.getElementById('mov-sku').value;
+            const quantidade = parseInt(document.getElementById('mov-quantidade').value);
+            const pedido = document.getElementById('mov-pedido').value;
+            const responsavel = document.getElementById('mov-responsavel').value;
+
+            const produto = state.produtos.find(p => p.sku === sku);
+            if (!produto) {
+                showAlert('Produto não encontrado', 'error');
+                return;
+            }
+
+            const novaQuantidade = state.tipoMovimento === 'entrada' ? produto.quantidade + quantidade : produto.quantidade - quantidade;
+            if (novaQuantidade < 0) {
+                showAlert('Quantidade insuficiente em estoque', 'error');
+                return;
+            }
+
+            const novaMovimentacao = {
+                id: Date.now().toString(),
+                sku,
+                descricao: produto.descricao,
+                linha: produto.linha,
+                foto: produto.foto,
+                tipo: state.tipoMovimento,
+                quantidade,
+                pedido,
+                responsavel,
+                data: new Date().toLocaleDateString('pt-BR'),
+                horario: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+            };
+
+            state.movimentacoes = [novaMovimentacao, ...state.movimentacoes];
+            state.produtos = state.produtos.map(p => 
+                p.sku === sku ? { ...p, quantidade: novaQuantidade, ultimaAtualizacao: new Date().toISOString() } : p
+            );
+
+            storage.set('policryl-movimentacoes', state.movimentacoes);
+            storage.set('policryl-produtos', state.produtos);
+
             showAlert('Movimentação registrada com sucesso!');
             e.target.reset();
             state.tipoMovimento = 'entrada';
@@ -1114,9 +1201,44 @@
                 showAlert('Acesso negado: Somente Administradores podem cadastrar/editar produtos.', 'error');
                 return;
             }
-            // ... (Lógica de salvar produto)
-            showAlert(state.editingItem ? 'Produto atualizado com sucesso!' : 'Produto cadastrado com sucesso!');
-            state.editingItem = null;
+            const sku = document.getElementById('prod-sku').value;
+            const descricao = document.getElementById('prod-descricao').value;
+            const linha = document.getElementById('prod-linha').value;
+            const estoqueInicial = parseInt(document.getElementById('prod-estoque')?.value) || 0;
+            const estoqueMinimo = parseInt(document.getElementById('prod-minimo').value) || 0;
+            const valorCusto = parseFloat(document.getElementById('prod-custo').value) || 0;
+            const valorVenda = parseFloat(document.getElementById('prod-venda').value) || 0;
+            const foto = document.getElementById('prod-foto').value;
+            const ativo = document.querySelector('input[name="prod-ativo"]:checked').value === 'true';
+            const visivel = document.querySelector('input[name="prod-visivel"]:checked').value === 'true';
+
+            if (state.editingItem) {
+                state.produtos = state.produtos.map(p => 
+                    p.id === state.editingItem.id 
+                        ? { ...p, sku, descricao, linha, estoqueMinimo, valorCusto, valorVenda, foto, ativo, visivel, ultimaAtualizacao: new Date().toISOString(), quantidade: p.quantidade } 
+                        : p
+                );
+                showAlert('Produto atualizado com sucesso!');
+                state.editingItem = null;
+            } else {
+                const novoProduto = {
+                    id: Date.now().toString(),
+                    sku,
+                    descricao,
+                    linha,
+                    quantidade: estoqueInicial,
+                    estoqueMinimo,
+                    valorCusto,
+                    valorVenda,
+                    foto,
+                    ativo,
+                    visivel,
+                    ultimaAtualizacao: new Date().toISOString()
+                };
+                state.produtos.push(novoProduto);
+                showAlert('Produto cadastrado com sucesso!');
+            }
+
             storage.set('policryl-produtos', state.produtos);
             e.target.reset();
             render();
@@ -1128,9 +1250,29 @@
                 showAlert('Acesso negado: Somente Administradores podem gerenciar responsáveis.', 'error');
                 return;
             }
-            // ... (Lógica de salvar responsável)
-            showAlert(state.editingItem ? 'Responsável atualizado com sucesso!' : 'Responsável cadastrado com sucesso!');
-            state.editingItem = null;
+            const nome = document.getElementById('resp-nome').value;
+            const sobrenome = document.getElementById('resp-sobrenome').value;
+            const departamento = document.getElementById('resp-departamento').value;
+            const ativo = document.querySelector('input[name="resp-ativo"]:checked').value === 'true';
+
+            if (state.editingItem) {
+                state.responsaveis = state.responsaveis.map(r => 
+                    r.id === state.editingItem.id ? { ...r, nome, sobrenome, departamento, ativo } : r
+                );
+                showAlert('Responsável atualizado com sucesso!');
+                state.editingItem = null;
+            } else {
+                const novoResponsavel = {
+                    id: Date.now().toString(),
+                    nome,
+                    sobrenome,
+                    departamento,
+                    ativo
+                };
+                state.responsaveis.push(novoResponsavel);
+                showAlert('Responsável cadastrado com sucesso!');
+            }
+
             storage.set('policryl-responsaveis', state.responsaveis);
             e.target.reset();
             render();
@@ -1142,9 +1284,29 @@
                 showAlert('Acesso negado: Somente Administradores podem gerenciar linhas.', 'error');
                 return;
             }
-            // ... (Lógica de salvar linha)
-            showAlert(state.editingItem ? 'Linha atualizada com sucesso!' : 'Linha cadastrada com sucesso!');
-            state.editingItem = null;
+            const codigo = document.getElementById('linha-codigo').value;
+            const nome = document.getElementById('linha-nome').value;
+
+            if (state.editingItem) {
+                state.linhas = state.linhas.map(l => 
+                    l.id === state.editingItem.id ? { ...l, codigo, nome } : l
+                );
+                showAlert('Linha atualizada com sucesso!');
+                state.editingItem = null;
+            } else {
+                const novaLinha = {
+                    id: Date.now().toString(),
+                    codigo,
+                    nome
+                };
+                if (state.linhas.some(l => l.nome === nome || l.codigo === codigo)) {
+                    showAlert('Linha ou Código já existem', 'error');
+                    return;
+                }
+                state.linhas.push(novaLinha);
+                showAlert('Linha cadastrada com sucesso!');
+            }
+
             storage.set('policryl-linhas', state.linhas);
             e.target.reset();
             render();
@@ -1193,6 +1355,10 @@
         function deletarLinha(id) {
             if (state.currentUser.role !== 'admin') return;
             if (confirm('Tem certeza que deseja excluir esta linha?')) {
+                if (state.produtos.some(p => p.linha === state.linhas.find(l => l.id === id).nome)) {
+                    showAlert('Não é possível excluir: existem produtos associados a esta linha.', 'error');
+                    return;
+                }
                 state.linhas = state.linhas.filter(l => l.id !== id);
                 storage.set('policryl-linhas', state.linhas);
                 showAlert('Linha excluída com sucesso!');
@@ -1200,7 +1366,8 @@
             }
         }
 
-        // RENDER FUNCTIONS
+
+        // ==================== RENDER FUNCTIONS - Telas Principais ====================
         function renderLogin() {
             const isLucas = state.loginRole === 'admin';
             const isOp = state.loginRole === 'operador';
@@ -1243,7 +1410,6 @@
             const isReadonly = state.currentUser.role === 'leitor';
             const isAdmin = state.currentUser.role === 'admin';
             
-            // Adicionado o estilo omie-style e cores para cada card
             return `
                 <div class="departamentos-container">
                     <div class="departamentos-header">
@@ -1258,31 +1424,31 @@
                             <p>Produtos Acabados</p>
                         </div>
                         
-                        <div class="departamento-card supply ${isReadonly ? 'disabled' : ''}" onclick="${isReadonly ? '' : `showAlert('Módulo em desenvolvimento', 'warning')`}">
+                        <div class="departamento-card supply ${isReadonly ? 'disabled' : ''}" onclick="${isReadonly ? '' : `abrirDepartamento('supply')`}">
                             <div class="departamento-card-icon" style="background: var(--dept-supply);">🏭</div>
                             <h3>Supply Chain</h3>
                             <p>Matéria-Prima e Compras</p>
                         </div>
                         
-                        <div class="departamento-card crm ${isReadonly ? 'disabled' : ''}" onclick="${isReadonly ? '' : `showAlert('Módulo em desenvolvimento', 'warning')`}">
+                        <div class="departamento-card crm ${isReadonly ? 'disabled' : ''}" onclick="${isReadonly ? '' : `abrirDepartamento('crm')`}">
                             <div class="departamento-card-icon" style="background: var(--dept-crm);">💼</div>
                             <h3>Comercial/CRM</h3>
                             <p>Vendas e Clientes</p>
                         </div>
                         
-                        <div class="departamento-card financeiro ${isReadonly ? 'disabled' : ''}" onclick="${isReadonly ? '' : `showAlert('Módulo em desenvolvimento', 'warning')`}">
+                        <div class="departamento-card financeiro ${isReadonly ? 'disabled' : ''}" onclick="${isReadonly ? '' : `abrirDepartamento('financeiro')`}">
                             <div class="departamento-card-icon" style="background: var(--dept-financeiro);">💰</div>
                             <h3>Financeiro</h3>
                             <p>Contas a Pagar/Receber</p>
                         </div>
                         
-                        <div class="departamento-card rh ${isAdmin ? '' : 'disabled'}" onclick="${isAdmin ? `showAlert('Módulo em desenvolvimento', 'warning')` : ''}">
+                        <div class="departamento-card rh ${isAdmin ? '' : 'disabled'}" onclick="${isAdmin ? `abrirDepartamento('rh')` : ''}">
                             <div class="departamento-card-icon" style="background: var(--dept-rh);">🏢</div>
                             <h3>RH/Pessoas</h3>
                             <p>Gestão de Colaboradores</p>
                         </div>
                         
-                        <div class="departamento-card admin ${isAdmin ? '' : 'disabled'}" onclick="${isAdmin ? `showAlert('Módulo em desenvolvimento', 'warning')` : ''}">
+                        <div class="departamento-card admin ${isAdmin ? '' : 'disabled'}" onclick="${isAdmin ? `abrirDepartamento('admin')` : ''}">
                             <div class="departamento-card-icon" style="background: var(--dept-admin);">⚙️</div>
                             <h3>Painel Admin</h3>
                             <p>Gerenciar Usuários</p>
@@ -1294,7 +1460,8 @@
             `;
         }
 
-        function renderSidebar() {
+        // ==================== RENDER FUNCTIONS - Módulo Estoque ====================
+        function renderSidebarEstoque() {
             const isAdmin = state.currentUser.role === 'admin';
             const isOperator = state.currentUser.role === 'operador';
 
@@ -1306,12 +1473,20 @@
                 { id: 'nova-movimentacao', label: 'Cadastrar Movimentação', icon: '📈', visible: isAdmin || isOperator },
                 { id: 'novo-produto', label: 'Cadastrar Produto', icon: '➕', visible: isAdmin },
                 { id: 'importar', label: 'Importar Planilha', icon: '📤', visible: isAdmin },
-                // Configurações agrupadas
-                { id: 'configuracoes', label: 'Configurações', icon: '⚙️', visible: isAdmin } 
+                { id: 'novo-responsavel', label: 'Gerenciar Responsáveis', icon: '👥', visible: isAdmin }, 
+                { id: 'nova-linha', label: 'Gerenciar Linhas', icon: '🏷️', visible: isAdmin } 
             ];
             
-            // Renderiza apenas os itens visíveis
-            const navItems = menuItems.filter(item => item.visible !== false && item.id !== 'configuracoes');
+            const nav = document.createElement('nav');
+            nav.className = 'sidebar-nav';
+            nav.id = 'sidebar-nav';
+            
+            nav.innerHTML = menuItems.filter(item => item.visible !== false).map(item => `
+                <button class="nav-item ${state.activeTab === item.id ? 'active' : ''}" onclick="changeTab('${item.id}')">
+                    <span>${item.icon}</span>
+                    <span>${item.label}</span>
+                </button>
+            `).join('');
 
             return `
                 <div class="sidebar-header">
@@ -1330,30 +1505,15 @@
                         ${state.theme === 'light' ? '🌙 Modo Escuro' : '☀️ Modo Claro'}
                     </button>
                 </div>
-                <nav class="sidebar-nav">
-                    ${navItems.map(item => `
-                        <button class="nav-item ${state.activeTab === item.id ? 'active' : ''}" onclick="changeTab('${item.id}')">
-                            <span>${item.icon}</span>
-                            <span>${item.label}</span>
-                        </button>
-                    `).join('')}
-                    
-                    ${isAdmin ? `
-                        <button class="nav-item ${state.activeTab === 'novo-responsavel' || state.activeTab === 'nova-linha' ? 'active' : ''}" onclick="changeTab('novo-responsavel')">
-                            <span>⚙️</span>
-                            <span>Configurações</span>
-                        </button>
-                    ` : ''}
-                </nav>
+                ${nav.outerHTML}
                 <button class="back-btn" onclick="voltarDepartamentos()">⬅️ Ecossistema</button>
                 <button class="logout-btn" onclick="logout()">🚪 Sair</button>
             `;
         }
 
-        function renderHeader() {
+        function renderHeaderEstoque() {
             const isAdmin = state.currentUser.role === 'admin';
-            const isReadonly = state.currentUser.role !== 'admin';
-
+            
             const titles = {
                 'dashboard': 'Status do Estoque',
                 'consulta': 'Consultar Produto',
@@ -1362,29 +1522,27 @@
                 'nova-movimentacao': 'Cadastrar Movimentação',
                 'novo-produto': state.editingItem ? 'Editar Produto' : 'Cadastrar Produto',
                 'importar': 'Importar Planilha',
-                'novo-responsavel': state.editingItem ? 'Editar Responsável' : 'Gestão de Responsáveis/Config',
-                'nova-linha': state.editingItem ? 'Editar Linha' : 'Gestão de Linhas/Config'
+                'novo-responsavel': state.editingItem ? 'Editar Responsável' : 'Gestão de Responsáveis',
+                'nova-linha': state.editingItem ? 'Editar Linha' : 'Gestão de Linhas'
             };
 
             const stats = calcularEstatisticas();
             const subtitles = {
-                'dashboard': `${stats.total} produtos cadastrados`,
+                'dashboard': `${stats.total} produtos visíveis (${stats.produtosVisiveis} cadastrados)`,
                 'estoque': `${stats.ativos} produtos ativos`,
                 'movimentacoes': `${state.movimentacoes.length} movimentações registradas`
             };
             
-            const currentTitle = titles[state.activeTab] || 'Configurações';
             const currentSubtitle = subtitles[state.activeTab] || (isAdmin ? 'Configurações e cadastros base do módulo Estoque.' : '');
-
 
             return `
                 <div class="header-top">
                     <div>
-                        <h2>${currentTitle}</h2>
+                        <h2>${titles[state.activeTab]}</h2>
                         <p>${currentSubtitle}</p>
                     </div>
                     <div class="header-actions">
-                        ${(state.activeTab === 'dashboard' || state.activeTab === 'estoque' || (isAdmin && state.activeTab === 'movimentacoes')) && !isReadonly ? 
+                        ${(state.activeTab === 'dashboard' || state.activeTab === 'estoque' || state.activeTab === 'movimentacoes') ? 
                             `<button class="btn btn-primary" onclick="exportarExcel()">📥 Exportar</button>` : ''}
                     </div>
                 </div>
@@ -1394,22 +1552,17 @@
         function renderDashboard() {
             const stats = calcularEstatisticas();
             const produtosFiltrados = getProdutosFiltrados();
-            const isReadonly = state.currentUser.role !== 'admin';
-            const isViewer = state.currentUser.role === 'leitor' || state.currentUser.role === 'operador';
+            const isViewer = state.currentUser.role !== 'admin';
 
             return `
                 <div class="stats-grid">
                     <div class="stat-card blue">
-                        <h3>Total Cadastrados</h3>
+                        <h3>Produtos Visíveis</h3>
                         <div class="value">${stats.total}</div>
                     </div>
                     <div class="stat-card">
                         <h3>Produtos Ativos</h3>
                         <div class="value">${stats.ativos}</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Estoque OK</h3>
-                        <div class="value">${stats.ok}</div>
                     </div>
                     <div class="stat-card yellow">
                         <h3>Próximo Mínimo</h3>
@@ -1430,20 +1583,27 @@
                         <div class="form-group">
                             <label>Status</label>
                             <select onchange="state.filterStatus = this.value; render()">
-                                <option value="todos">Todos</option>
-                                <option value="ativo">Ativos</option>
-                                <option value="inativo">Inativos</option>
-                                <option value="abaixo">Abaixo do Mínimo</option>
-                                <option value="proximo">Próximo do Mínimo</option>
-                                <option value="ok">OK</option>
+                                <option value="todos" ${state.filterStatus === 'todos' ? 'selected' : ''}>Todos</option>
+                                <option value="ativo" ${state.filterStatus === 'ativo' ? 'selected' : ''}>Ativos</option>
+                                <option value="inativo" ${state.filterStatus === 'inativo' ? 'selected' : ''}>Inativos</option>
+                                <option value="abaixo" ${state.filterStatus === 'abaixo' ? 'selected' : ''}>Abaixo do Mínimo</option>
+                                <option value="proximo" ${state.filterStatus === 'proximo' ? 'selected' : ''}>Próximo do Mínimo</option>
+                                <option value="ok" ${state.filterStatus === 'ok' ? 'selected' : ''}>OK</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label>Linha</label>
                             <select onchange="state.filterLinha = this.value; render()">
-                                <option value="todas">Todas</option>
+                                <option value="todas" ${state.filterLinha === 'todas' ? 'selected' : ''}>Todas</option>
                                 ${state.linhas.map(l => `<option value="${l.nome}" ${state.filterLinha === l.nome ? 'selected' : ''}>${l.nome}</option>`).join('')}
                             </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Ordenar por Quantidade</label>
+                            <div class="btn-group" style="display: flex; gap: 10px;">
+                                <button class="btn ${state.sortBy === 'quantidade' && state.sortOrder === 'asc' ? 'btn-primary' : 'btn-secondary'}" onclick="state.sortBy = 'quantidade'; state.sortOrder = 'asc'; render()">Cresc.</button>
+                                <button class="btn ${state.sortBy === 'quantidade' && state.sortOrder === 'desc' ? 'btn-primary' : 'btn-secondary'}" onclick="state.sortBy = 'quantidade'; state.sortOrder = 'desc'; render()">Decresc.</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1499,14 +1659,229 @@
             `;
         }
 
-        // ... (renderConsulta, renderEstoqueGeral, renderMovimentacoes, renderNovaMovimentacao, etc. - mantidos e ajustados para permissões)
+        function renderConsulta() {
+            const produto = state.produtos.find(p => p.sku.toLowerCase() === state.consultaSKU.toLowerCase());
+            const isViewer = state.currentUser.role !== 'admin';
+
+            return `
+                <div class="form-card">
+                    <div class="consulta-search">
+                        <input type="text" placeholder="Ex: POL-001" value="${state.consultaSKU}" oninput="state.consultaSKU = this.value">
+                        <button class="btn btn-primary" onclick="render()">🔍 Buscar</button>
+                    </div>
+
+                    ${produto ? `
+                        <div class="form-grid">
+                            <div class="info-card" style="background: var(--bg-secondary); border: 1px solid var(--border);">
+                                <label>SKU</label>
+                                <div class="value">${produto.sku}</div>
+                            </div>
+                            <div class="info-card" style="background: var(--bg-secondary); border: 1px solid var(--border);">
+                                <label>Descrição</label>
+                                <div class="value">${produto.descricao}</div>
+                            </div>
+                            <div class="info-card" style="background: var(--bg-secondary); border: 1px solid var(--border);">
+                                <label>Linha</label>
+                                <div class="value">${produto.linha}</div>
+                            </div>
+                            <div class="info-card" style="background: var(--bg-secondary); border: 1px solid var(--border);">
+                                <label>Status</label>
+                                <div class="value">${produto.ativo ? 'Ativo' : 'Inativo'} ${!produto.visivel ? ' (Oculto)' : ''}</div>
+                            </div>
+                            <div class="info-card" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--primary);">
+                                <label>Quantidade Atual</label>
+                                <div class="value" style="color: var(--primary);">${produto.quantidade}</div>
+                            </div>
+                            <div class="info-card" style="background: var(--bg-secondary); border: 1px solid var(--border);">
+                                <label>Quantidade Mínima</label>
+                                <div class="value">${produto.estoqueMinimo}</div>
+                            </div>
+                            <div class="info-card ${isViewer ? 'hidden' : ''}" style="background: var(--bg-secondary); border: 1px solid var(--border);">
+                                <label>Valor Custo (R$)</label>
+                                <div class="value">R$ ${produto.valorCusto.toFixed(2)}</div>
+                            </div>
+                            <div class="info-card ${isViewer ? 'hidden' : ''}" style="background: var(--bg-secondary); border: 1px solid var(--border);">
+                                <label>Valor Venda (R$)</label>
+                                <div class="value">R$ ${produto.valorVenda.toFixed(2)}</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 24px;">
+                            <label style="display: block; margin-bottom: 12px; font-weight: 600;">Nível no Estoque</label>
+                            <span class="badge badge-${getStatusProduto(produto) === 'ok' ? 'success' : getStatusProduto(produto) === 'proximo' ? 'warning' : 'danger'}" style="font-size: 16px; padding: 10px 20px;">
+                                ${getStatusLabel(getStatusProduto(produto))}
+                            </span>
+                        </div>
+                    ` : state.consultaSKU ? `
+                        <div class="empty-state" style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
+                            <p style="font-size: 18px; font-weight: 600;">Nenhum produto encontrado</p>
+                            <p style="margin-top: 8px;">Verifique o SKU e tente novamente</p>
+                        </div>
+                    ` : `
+                        <div class="empty-state" style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
+                            <p style="font-size: 18px; font-weight: 600;">Digite um SKU para consultar</p>
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+
+        function renderEstoqueGeral() {
+            const produtosBase = state.currentUser.role === 'admin' 
+                ? state.produtos 
+                : state.produtos.filter(p => p.visivel);
+                
+            return `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Foto</th>
+                                <th>SKU</th>
+                                <th>Descrição</th>
+                                <th>Linha</th>
+                                <th>Quantidade Atual</th>
+                                <th>Última Atualização</th>
+                                <th>Mínimo Ideal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${produtosBase.map(p => `
+                                <tr>
+                                    <td>
+                                        ${p.foto ? 
+                                            `<img src="${p.foto}" class="product-img" alt="${p.descricao}" onclick="openImageModal('${p.foto}')">` : 
+                                            `<div class="img-placeholder">📦</div>`
+                                        }
+                                    </td>
+                                    <td><strong>${p.sku}</strong></td>
+                                    <td>${p.descricao}</td>
+                                    <td><span class="badge badge-blue">${p.linha}</span></td>
+                                    <td><strong>${p.quantidade}</strong></td>
+                                    <td>${new Date(p.ultimaAtualizacao).toLocaleDateString('pt-BR')}</td>
+                                    <td>${p.estoqueMinimo}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderMovimentacoes() {
+            return `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Horário</th>
+                                <th>SKU</th>
+                                <th>Descrição</th>
+                                <th>Linha</th>
+                                <th>Tipo</th>
+                                <th>Quantidade</th>
+                                <th>Pedido</th>
+                                <th>Responsável</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${state.movimentacoes.length === 0 ? `
+                                <tr>
+                                    <td colspan="9" style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
+                                        <p style="font-size: 18px; font-weight: 600;">Nenhuma movimentação registrada</p>
+                                    </td>
+                                </tr>
+                            ` : state.movimentacoes.map(m => `
+                                <tr>
+                                    <td>${m.data}</td>
+                                    <td>${m.horario}</td>
+                                    <td><strong>${m.sku}</strong></td>
+                                    <td>${m.descricao}</td>
+                                    <td><span class="badge badge-blue">${m.linha}</span></td>
+                                    <td>
+                                        <span class="badge ${m.tipo === 'entrada' ? 'badge-success' : 'badge-danger'}">
+                                            ${m.tipo === 'entrada' ? '↑ Entrada' : '↓ Saída'}
+                                        </span>
+                                    </td>
+                                    <td><strong>${m.tipo === 'entrada' ? '+' : '-'}${m.quantidade}</strong></td>
+                                    <td>${m.pedido || '-'}</td>
+                                    <td>${m.responsavel}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderNovaMovimentacao() {
+             if (state.currentUser.role === 'leitor') {
+                return '<div class="form-card"><h3 style="color: var(--danger);">Acesso Negado</h3><p>Somente Administradores e Operadores podem registrar movimentações.</p></div>';
+            }
+            const produtosDisponiveis = state.produtos.filter(p => p.ativo && p.visivel);
+
+            return `
+                <div class="form-card">
+                    <h3>Cadastro de Movimentação</h3>
+                    <form onsubmit="salvarMovimentacao(event); return false;">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Data</label>
+                                <input type="text" value="${new Date().toLocaleDateString('pt-BR')}" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label>Horário</label>
+                                <input type="text" value="${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}" disabled>
+                            </div>
+                            <div class="form-group" style="grid-column: span 2;">
+                                <label>SKU *</label>
+                                <select id="mov-sku" required>
+                                    <option value="">Selecione um produto...</option>
+                                    ${produtosDisponiveis.map(p => `
+                                        <option value="${p.sku}">${p.sku} - ${p.descricao}</option>
+                                    `).join('')}
+                                </select>
+                                ${produtosDisponiveis.length === 0 ? '<p style="color: var(--danger); font-size: 12px; margin-top: 5px;">Nenhum produto ativo/visível para movimentação.</p>' : ''}
+                            </div>
+                            <div class="form-group" style="grid-column: span 2;">
+                                <label>Tipo de Movimentação *</label>
+                                <div style="display: flex; gap: 12px;">
+                                    <button type="button" class="btn btn-primary" id="tipo-entrada" onclick="setTipoMovimento('entrada')" style="flex: 1;">↑ Entrada</button>
+                                    <button type="button" class="btn btn-secondary" id="tipo-saida" onclick="setTipoMovimento('saida')" style="flex: 1;">↓ Saída</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Quantidade *</label>
+                                <input type="number" id="mov-quantidade" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Pedido do Movimento</label>
+                                <input type="text" id="mov-pedido" placeholder="Ex: #12345">
+                            </div>
+                            <div class="form-group" style="grid-column: span 2;">
+                                <label>Responsável *</label>
+                                <select id="mov-responsavel" required>
+                                    <option value="">Selecione um responsável...</option>
+                                    ${state.responsaveis.filter(r => r.ativo).map(r => `
+                                        <option value="${r.nome} ${r.sobrenome}">${r.nome} ${r.sobrenome} - ${r.departamento}</option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">
+                            💾 Registrar Movimentação
+                        </button>
+                    </form>
+                </div>
+            `;
+        }
 
         function renderNovoProduto() {
             if (state.currentUser.role !== 'admin') {
                 return '<div class="form-card"><h3 style="color: var(--danger);">Acesso Negado</h3><p>Somente Administradores podem cadastrar ou editar produtos.</p></div>';
             }
             const isEditing = !!state.editingItem;
-            // ... (Restante do formulário de produto)
             return `
                 <div class="form-card">
                     <h3>${isEditing ? 'Editar Produto' : 'Novo Produto'}</h3>
@@ -1585,7 +1960,7 @@
                         </div>
                     </form>
                 </div>
-                
+
                 <div class="table-container">
                     <div style="padding: 20px; border-bottom: 1px solid var(--border);">
                         <h3 style="font-size: 18px; font-weight: 700;">Produtos Cadastrados</h3>
@@ -1633,12 +2008,11 @@
                 </div>
             `;
         }
-
+        
         function renderImportar() {
             if (state.currentUser.role !== 'admin') {
                 return '<div class="form-card"><h3 style="color: var(--danger);">Acesso Negado</h3><p>Somente Administradores podem importar planilhas.</p></div>';
             }
-            // ... (Restante do formulário de importação)
              return `
                 <div class="form-card">
                     <h3>📤 Importar Planilha de Produtos</h3>
@@ -1667,36 +2041,12 @@
             `;
         }
 
-        // Função que agrupa Responsáveis e Linhas
-        function renderConfiguracoes() {
+        function renderNovoResponsavel() {
             if (state.currentUser.role !== 'admin') {
-                return '<div class="form-card"><h3 style="color: var(--danger);">Acesso Negado</h3><p>Somente Administradores podem acessar as configurações.</p></div>';
+                return '<div class="form-card"><h3 style="color: var(--danger);">Acesso Negado</h3><p>Somente Administradores podem gerenciar responsáveis.</p></div>';
             }
-            const currentConfigTab = state.activeTab === 'nova-linha' ? 'linhas' : 'responsaveis';
-
-            return `
-                <div style="display: flex; gap: 12px; margin-bottom: 24px;">
-                    <button class="btn ${currentConfigTab === 'responsaveis' ? 'btn-primary' : 'btn-secondary'}" onclick="changeTab('novo-responsavel')">
-                        👥 Gerenciar Responsáveis
-                    </button>
-                    <button class="btn ${currentConfigTab === 'linhas' ? 'btn-primary' : 'btn-secondary'}" onclick="changeTab('nova-linha')">
-                        🏷️ Gerenciar Linhas de Produto
-                    </button>
-                    ${state.editingItem ? `
-                        <button type="button" class="btn btn-secondary" onclick="state.editingItem = null; render()">
-                            Cancelar Edição
-                        </button>
-                    ` : ''}
-                </div>
-                
-                ${currentConfigTab === 'responsaveis' ? renderNovoResponsavelFormAndTable() : renderNovaLinhaFormAndTable()}
-            `;
-        }
-        
-        function renderNovoResponsavelFormAndTable() {
             const isEditing = !!state.editingItem;
-            // ... (Restante dos formulários e tabelas)
-             return `
+            return `
                 <div class="form-card">
                     <h3>${isEditing ? 'Editar Responsável' : 'Cadastrar Novo Responsável'}</h3>
                     <form onsubmit="salvarResponsavel(event); return false;">
@@ -1748,7 +2098,7 @@
                             ${state.responsaveis.map(r => `
                                 <tr>
                                     <td><strong>${r.nome} ${r.sobrenome}</strong></td>
-                                    <td><span class="badge badge-blue">${r.departamento}</span></td>
+                                    <td><span class="badge badge-purple">${r.departamento}</span></td>
                                     <td>
                                         <span class="badge ${r.ativo ? 'badge-success' : 'badge-gray'}">
                                             ${r.ativo ? '✓ Ativo' : '✗ Inativo'}
@@ -1756,7 +2106,7 @@
                                     </td>
                                     <td>
                                         <button class="icon-btn" onclick="editarResponsavel('${r.id}')">✏️</button>
-                                        <button class="icon-btn" onclick="deletarResponsavel('${r.id}')" style="color: var(--danger);">🗑️</button>
+                                        <button class="icon-btn delete" onclick="deletarResponsavel('${r.id}')">🗑️</button>
                                     </td>
                                 </tr>
                             `).join('')}
@@ -1766,9 +2116,11 @@
             `;
         }
 
-        function renderNovaLinhaFormAndTable() {
+        function renderNovaLinha() {
+            if (state.currentUser.role !== 'admin') {
+                return '<div class="form-card"><h3 style="color: var(--danger);">Acesso Negado</h3><p>Somente Administradores podem gerenciar linhas.</p></div>';
+            }
             const isEditing = !!state.editingItem;
-            // ... (Restante dos formulários e tabelas)
             return `
                 <div class="form-card">
                     <h3>${isEditing ? 'Editar Linha' : 'Cadastrar Nova Linha de Produto'}</h3>
@@ -1783,9 +2135,16 @@
                                 <input type="text" id="linha-nome" placeholder="Ex: Tintas, Vernizes" value="${state.editingItem?.nome || ''}" required>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">
-                            💾 ${isEditing ? 'Atualizar' : 'Cadastrar'} Linha
-                        </button>
+                        <div style="display: flex; gap: 12px; margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary" style="flex: 1;">
+                                💾 ${isEditing ? 'Atualizar' : 'Cadastrar'} Linha
+                            </button>
+                            ${isEditing ? `
+                                <button type="button" class="btn btn-secondary" onclick="state.editingItem = null; render()">
+                                    Cancelar
+                                </button>
+                            ` : ''}
+                        </div>
                     </form>
                 </div>
 
@@ -1807,8 +2166,10 @@
                                     <td><strong>${l.codigo}</strong></td>
                                     <td><span class="badge badge-blue">${l.nome}</span></td>
                                     <td>
-                                        <button class="icon-btn" onclick="editarLinha('${l.id}')">✏️</button>
-                                        <button class="icon-btn" onclick="deletarLinha('${l.id}')" style="color: var(--danger);">🗑️</button>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button class="icon-btn" onclick="editarLinha('${l.id}')">✏️</button>
+                                            <button class="icon-btn delete" onclick="deletarLinha('${l.id}')">🗑️</button>
+                                        </div>
                                     </td>
                                 </tr>
                             `).join('')}
@@ -1820,35 +2181,68 @@
 
 
         function renderEstoque() {
-            const isConfigTab = state.activeTab === 'novo-responsavel' || state.activeTab === 'nova-linha';
+            const contentArea = document.getElementById('app-content-area');
             
+            // Oculta/Mostra o botão de exportar no Header
+            const headerActions = document.getElementById('app-header-actions');
+            if (headerActions) headerActions.innerHTML = '';
+            
+            let content = '';
+            switch(state.activeTab) {
+                case 'dashboard':
+                    content = renderDashboard();
+                    break;
+                case 'consulta':
+                    content = renderConsulta();
+                    break;
+                case 'estoque':
+                    content = renderEstoqueGeral();
+                    break;
+                case 'movimentacoes':
+                    content = renderMovimentacoes();
+                    break;
+                case 'nova-movimentacao':
+                    content = renderNovaMovimentacao();
+                    setTimeout(() => setTipoMovimento('entrada'), 0);
+                    break;
+                case 'novo-produto':
+                    content = renderNovoProduto();
+                    break;
+                case 'importar':
+                    content = renderImportar();
+                    break;
+                case 'novo-responsavel':
+                    content = renderNovoResponsavel();
+                    break;
+                case 'nova-linha':
+                    content = renderNovaLinha();
+                    break;
+                default:
+                    content = renderDashboard();
+            }
+            
+            // Recria a estrutura completa do app do estoque (Sidebar, Header, Content)
             return `
                 <div class="app-container">
                     <div class="sidebar">
-                        ${renderSidebar()}
+                        ${renderSidebarEstoque()}
                     </div>
                     
                     <div class="main-content">
                         <header class="header">
-                            ${renderHeader()}
+                            ${renderHeaderEstoque()}
                         </header>
                         
                         <div id="alert-container"></div>
                         
-                        <main class="content-area">
-                            ${state.activeTab === 'dashboard' ? renderDashboard() : 
-                              state.activeTab === 'consulta' ? renderConsulta() :
-                              state.activeTab === 'estoque' ? renderEstoqueGeral() :
-                              state.activeTab === 'movimentacoes' ? renderMovimentacoes() :
-                              state.activeTab === 'nova-movimentacao' ? renderNovaMovimentacao() :
-                              state.activeTab === 'novo-produto' ? renderNovoProduto() :
-                              state.activeTab === 'importar' ? renderImportar() :
-                              isConfigTab ? renderConfiguracoes() : ''}
+                        <main class="content-area" id="app-content-area">
+                            ${content}
                         </main>
                     </div>
                 </div>
             `;
         }
+
 
         function render() {
             const app = document.getElementById('app');
@@ -1859,14 +2253,13 @@
                 app.innerHTML = renderDepartamentos();
             } else if (state.currentView === 'estoque') {
                 app.innerHTML = renderEstoque();
-                // Garante que o tipo de movimento inicial esteja correto ao carregar a tela
-                if (state.activeTab === 'nova-movimentacao') {
-                    setTimeout(() => setTipoMovimento('entrada'), 0);
-                }
+            } else {
+                app.innerHTML = renderLogin(); 
             }
         }
 
-        init();
+        initData();
+        render();
     </script>
 </body>
 </html>
