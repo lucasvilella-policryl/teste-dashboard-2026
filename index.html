@@ -1,804 +1,679 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Comercial - Policryl</title>
-    
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* === VARIÁVEIS DE TEMA === */
+        /* === RESET E VARIÁVEIS GLOBAIS === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         :root {
-            /* Palette Dark */
-            --bg-app: #12122b;       
-            --bg-header: #1a1640;    
-            --bg-card: #201c4e;      
-            --bg-card-border: #363275; 
+            /* Paleta Profissional Dark Neon */
+            --bg-main: #0a0a14; /* Fundo ultra escuro */
+            --bg-secondary: #111122; /* Fundo secundário */
             
+            /* Cores dos Cartões (Glassmorphism) */
+            --card-bg: rgba(20, 20, 40, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-blur: blur(12px);
+
+            /* Cores de Texto */
             --text-primary: #ffffff;
-            --text-secondary: #a5b4fc; 
-            --accent: #6366f1; 
-            
-            --status-blue: #3b82f6;
-            --status-orange: #f97316;
-            --status-green: #22c55e;
-            --status-red: #ef4444;
-            
-            --font-main: 'Inter', sans-serif;
-            --radius: 16px;
-            --shadow: 0 8px 24px rgba(0,0,0,0.4);
-        }
+            --text-secondary: #94a3b8; /* Cinza azulado */
+            --text-muted: #64748b;
 
-        /* Tema LIGHT */
-        body.light-theme {
-            --bg-app: #f1f5f9;
-            --bg-header: #ffffff;
-            --bg-card: #ffffff;
-            --bg-card-border: #cbd5e1;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
+            /* Cores de Acento (Neon Glow) */
+            --accent-primary: #6366f1; /* Indigo neon */
+            --accent-success: #22c55e; /* Verde neon */
+            --accent-warning: #f59e0b; /* Laranja/Amarelo neon */
+            --accent-danger: #ef4444;  /* Vermelho neon */
+            --accent-info: #0ea5e9;    /* Azul claro neon */
 
-        /* === RESET & BASE === */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+            /* Cores de Franquias (Vibrantes) */
+            --color-bc: #ff6b35;
+            --color-cs: #8b4513; /* Ajustado para um marrom mais rico */
+            --color-kp: #ff1493; /* Rosa vibrante */
+            --color-pb: #ffd700;
+            --color-id: #1e90ff;
+        }
 
         body {
-            font-family: var(--font-main);
-            background-color: var(--bg-app);
+            font-family: 'Inter', sans-serif;
+            /* Fundo com gradiente sutil e profundo */
+            background: radial-gradient(circle at top center, #1a1a2e 0%, #0a0a14 100%);
             color: var(--text-primary);
+            padding: 20px;
             min-height: 100vh;
             overflow-x: hidden;
-            transition: background 0.3s ease;
         }
 
-        .dashboard-wrapper {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-            height: 100vh;
-        }
-
-        /* === HEADER === */
-        .top-bar {
-            background: var(--bg-header);
-            border-radius: var(--radius);
-            border: 1px solid var(--bg-card-border);
-            padding: 0 30px;
-            height: 220px; 
-            display: grid;
-            grid-template-columns: 25% 50% 25%;
-            align-items: center;
-            position: relative;
-            box-shadow: var(--shadow);
-        }
-
-        /* Logo Area */
-        .brand-area { display: flex; align-items: center; gap: 20px; }
-        .logo { height: 60px; width: auto; object-fit: contain; }
-        .brand-text h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: 1px; line-height: 1; }
-        .brand-text span { font-size: 0.8rem; color: var(--text-secondary); display: block; margin-top: 5px; }
-
-        /* Gauge Area */
-        .gauge-container {
-            position: relative;
-            height: 100%;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end; 
-            align-items: center;
-            padding-bottom: 20px;
-        }
-        
-        .canvas-wrapper {
-            position: relative;
-            height: 140px; 
-            width: 280px;  
-        }
-
-        .gauge-overlay {
-            margin-top: -10px; 
-            text-align: center;
-            z-index: 10;
-        }
-        .gauge-value {
-            font-size: 1.6rem;
-            font-weight: 900;
-            color: var(--text-primary);
-            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            display: block;
-            line-height: 1.2;
-        }
-        .gauge-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
-
-        /* Controles Area */
-        .controls-area {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 15px;
-            height: 100%;
-        }
-
-        .btn-icon {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--bg-card-border);
-            color: var(--text-primary);
-            width: 42px; height: 42px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.3rem;
-            display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s;
-        }
-        .btn-icon:hover { background: var(--accent); color: white; border-color: var(--accent); }
-
-        .controls-column {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 12px;
-        }
-
-        .timer-display {
-            font-family: monospace;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            text-align: right;
-            margin-right: 5px;
-        }
-        
-        select.custom-select {
-            background: var(--bg-app);
-            border: 1px solid var(--bg-card-border);
-            color: var(--text-primary);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-family: var(--font-main);
-            font-size: 0.85rem;
-            cursor: pointer;
-            outline: none;
-        }
-        select.custom-select:hover { border-color: var(--accent); }
-
-        .btn-filter {
-            background: var(--bg-card);
-            border: 1px solid var(--accent);
-            color: var(--text-primary);
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600; cursor: pointer;
-            display: flex; align-items: center; gap: 8px;
-            font-family: var(--font-main);
-            font-size: 0.9rem;
-        }
-        .btn-filter:hover { background: var(--accent); color: white; }
-
-        /* Menu Filtro */
-        .filter-wrapper { position: relative; }
-        .filter-dropdown {
-            position: absolute;
-            top: 130%; right: 0;
-            background: var(--bg-header);
-            border: 1px solid var(--bg-card-border);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            width: 280px;
-            display: none;
-            z-index: 100;
-            flex-direction: column; gap: 15px;
-        }
-        .filter-dropdown.active { display: flex; }
-        .filter-group label { display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 5px; font-weight: 600; }
-        
-        /* Ações do Filtro */
-        .filter-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .btn-apply {
-            background: var(--accent); border: none; padding: 12px;
-            color: white; font-weight: bold; border-radius: 6px; cursor: pointer;
-            width: 100%;
-            font-size: 0.9rem;
-        }
-        .btn-apply:hover { opacity: 0.9; }
-
-        /* === KPIS ROW === */
-        .kpi-row {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 1.5vw;
-        }
-
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--bg-card-border);
-            border-radius: var(--radius);
-            padding: 24px 20px;
-            display: flex; flex-direction: column; justify-content: center;
-            box-shadow: var(--shadow);
-            position: relative;
-            overflow: hidden;
-            min-height: 150px;
-        }
-
-        .card-label { font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
-        .kpi-main h2 { font-size: 1.8rem; font-weight: 800; margin: 0; color: var(--text-primary); letter-spacing: -0.5px; }
-        .kpi-main.highlight h2 { color: var(--status-green); }
-        .card-sub { font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px; opacity: 0.8; }
-
-        .kpi-status { border-top: 5px solid; justify-content: space-between; }
-        .kpi-status h2 { font-size: 2.5rem; font-weight: 800; line-height: 1; margin: 10px 0; }
-        
-        .status-blue { border-top-color: var(--status-blue); }
-        .status-orange { border-top-color: var(--status-orange); }
-        .status-green { border-top-color: var(--status-green); }
-
-        /* === GRID FRANQUIAS === */
-        .franchise-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 1.5vw;
-            flex: 1; 
-        }
-
-        .franchise-card {
-            background: var(--bg-card);
-            border: 1px solid var(--bg-card-border);
-            border-radius: var(--radius);
-            padding: 20px;
-            display: flex; flex-direction: column; justify-content: space-between;
-            box-shadow: var(--shadow);
-            border-top: 4px solid; 
-        }
-
-        .fra-header {
-            display: flex; align-items: center; gap: 12px;
-            padding-bottom: 15px; border-bottom: 1px solid var(--bg-card-border);
-            margin-bottom: 15px;
-        }
-        
-        .fra-icon-box {
-            width: 40px; height: 40px; border-radius: 8px;
-            border: 2px solid; 
-            display: flex; align-items: center; justify-content: center;
-            background: transparent;
-        }
-
-        .fra-title h3 { font-size: 1rem; font-weight: 700; color: var(--text-primary); text-transform: uppercase; }
-        .fra-title span { font-size: 0.75rem; color: var(--text-secondary); display: block; }
-
-        .fra-body { display: flex; flex-direction: column; gap: 10px; }
-        .fra-row { display: flex; justify-content: space-between; align-items: baseline; }
-        .fra-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
-        .fra-val { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
-        .fra-val.money { color: var(--status-green); font-weight: 700; font-size: 1.1rem; }
-        
-        .fra-row.divider {
-            border-top: 1px solid var(--bg-card-border);
-            padding-top: 10px; margin-top: 5px;
+        .container {
+            max-width: 1600px; /* Aumentei um pouco para telas modernas */
+            margin: 0 auto;
         }
 
         /* === LOADING === */
         .loading {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #0f0c29;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 9999;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10, 10, 20, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; z-index: 9999;
         }
         .spinner {
             width: 50px; height: 50px;
-            border: 4px solid rgba(255,255,255,0.1);
-            border-top-color: var(--accent);
+            border: 3px solid rgba(99, 102, 241, 0.2);
+            border-top-color: var(--accent-primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            box-shadow: 0 0 15px var(--accent-primary);
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-text { margin-top: 15px; color: var(--accent); font-weight: 600; font-family: var(--font-main); }
+        .loading-text { font-size: 16px; color: var(--accent-primary); font-weight: 600; letter-spacing: 1px; }
 
-        /* === RESPONSIVIDADE === */
-        @media (min-width: 1920px) {
-            html { font-size: 20px; } 
-            .dashboard-wrapper { padding: 30px; gap: 30px; }
-            .top-bar { height: 260px; }
-            .canvas-wrapper { width: 360px; height: 180px; }
+        /* === HEADER MODERNIZADO === */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding: 20px 25px;
+            background: var(--card-bg);
+            backdrop-filter: var(--card-blur);
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo-section { display: flex; align-items: center; gap: 20px; }
+        .logo img { height: 45px; width: auto; filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); }
+        
+        /* 3. Controles Direita */
+        .controls-area {
+            display: flex; flex-direction: column; align-items: flex-end; gap: 15px;
+            height: 100%; justify-content: center; padding-top: 20px;
+        }
+
+        /* Toggle */
+        .theme-toggle {
+            cursor: pointer; width: 50px; height: 26px; 
+            background: #4f46e5; border-radius: 50px; position: relative;
+        }
+        .toggle-dot {
+            width: 20px; height: 20px; background: #fff; border-radius: 50%;
+            position: absolute; top: 3px; right: 3px; display: flex; align-items: center; justify-content: center;
+            color: #4f46e5; font-size: 12px;
+        }
+
+        /* Linha de Ação (Filtrar + Select Tempo) */
+        .actions-row { display: flex; gap: 10px; align-items: center; position: relative; }
+        
+        .btn-filter {
+            background: transparent; border: 1px solid #4f46e5; color: #fff;
+            padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;
+            display: flex; align-items: center; gap: 8px; font-family: 'Inter';
         }
         
-        @media (max-width: 1366px) {
-            html { font-size: 14px; }
-            .kpi-row { grid-template-columns: repeat(3, 1fr); gap: 15px; }
-            .franchise-grid { overflow-y: auto; }
+        .time-select {
+            background: #1e1e2e; border: 1px solid var(--border-card); color: #fff;
+            padding: 8px; border-radius: 6px; outline: none; cursor: pointer;
+        }
+
+        .timer-text { font-family: monospace; font-size: 12px; color: #6366f1; margin-top: -10px; }
+
+        /* Dropdown do Filtro */
+        .filter-dropdown {
+            position: absolute; top: 120%; right: 0;
+            background: #1a1a2e; border: 1px solid var(--border-card);
+            padding: 20px; border-radius: 12px; width: 250px; display: none; z-index: 100;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .filter-dropdown.active { display: block; }
+        .f-group { margin-bottom: 15px; }
+        .f-group label { display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; }
+        .f-select { width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 4px; }
+        .btn-apply { width: 100%; padding: 10px; background: #6366f1; border: none; color: #fff; border-radius: 6px; font-weight: 700; cursor: pointer; }
+
+
+        /* === GAUGE (VELOCÍMETRO) PROFISSIONAL === */
+        /* Área superior dividida: Gauge + Header */
+        .top-summary-area {
+            display: grid;
+            grid-template-columns: 1.2fr 2fr; /* Gauge ocupa menos espaço */
+            gap: 25px;
+            margin-bottom: 30px;
+            align-items: stretch;
+        }
+
+        /* Container do Gauge */
+        .gauge-card {
+            background: var(--card-bg);
+            backdrop-filter: var(--card-blur);
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Ajuste do canvas para o semicírculo */
+        .canvas-wrapper {
+            position: relative;
+            width: 280px;
+            height: 140px; /* Metade da largura para semicírculo perfeito */
+            margin-bottom: 15px;
+        }
+
+        /* Textos abaixo do gauge */
+        .gauge-footer {
+            text-align: center;
+            margin-top: -10px; /* Sobe um pouco para ficar perto do arco */
+            z-index: 2;
+        }
+        .gauge-main-value {
+            font-size: 28px; font-weight: 800; color: var(--text-primary);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            line-height: 1.2;
+        }
+        .gauge-sub-label {
+            font-size: 12px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 1px;
+            margin-top: 4px;
+        }
+        .gauge-meta-target {
+            font-size: 13px; color: var(--text-muted); margin-top: 4px; font-weight: 500;
+        }
+
+
+        /* === KPIS GRID (Estilo Neon Glow) === */
+        .kpis-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 por linha na área superior */
+            gap: 20px;
+            align-content: start;
+        }
+
+        .kpi-card {
+            background: var(--card-bg);
+            backdrop-filter: var(--card-blur);
+            border-radius: 16px;
+            padding: 24px 20px;
+            border: 1px solid var(--card-border);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+
+        /* Efeito de Hover e Glow */
+        .kpi-card:hover { transform: translateY(-3px); }
+
+        /* Bordas brilhantes baseadas no tipo */
+        .kpi-card.primary { box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.3), 0 4px 20px rgba(99, 102, 241, 0.15); }
+        .kpi-card.success { box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.3), 0 4px 20px rgba(34, 197, 94, 0.15); }
+        .kpi-card.warning { box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.3), 0 4px 20px rgba(245, 158, 11, 0.15); }
+        .kpi-card.danger  { box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.3), 0 4px 20px rgba(239, 68, 68, 0.15); }
+        .kpi-card.info    { box-shadow: inset 0 0 0 1px rgba(14, 165, 233, 0.3), 0 4px 20px rgba(14, 165, 233, 0.15); }
+
+        /* Pequena barra de acento superior */
+        .kpi-card::before {
+            content: ''; position: absolute; top: 0; left: 30%; right: 30%; height: 2px;
+            background: currentColor; box-shadow: 0 0 10px currentColor; opacity: 0.7; border-radius: 0 0 10px 10px;
+        }
+        .kpi-card.primary { color: var(--accent-primary); }
+        .kpi-card.success { color: var(--accent-success); }
+        .kpi-card.warning { color: var(--accent-warning); }
+        .kpi-card.danger  { color: var(--accent-danger); }
+        .kpi-card.info    { color: var(--accent-info); }
+
+        .kpi-label { font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); margin-bottom: 12px; letter-spacing: 0.5px; }
+        .kpi-value { font-size: 26px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px; }
+        .kpi-subtitle { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+        /* === GRÁFICOS E HISTÓRICO === */
+        .section-row { margin-bottom: 30px; }
+        .chart-card {
+            background: var(--card-bg);
+            backdrop-filter: var(--card-blur);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        .chart-title { font-size: 15px; font-weight: 700; margin-bottom: 25px; color: var(--text-primary); display: flex; align-items: center; gap: 10px; }
+        .chart-title i { font-size: 18px; color: var(--accent-primary); }
+
+        .historico-chart { height: 350px; }
+        .charts-3-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .chart-container-small { position: relative; height: 250px; }
+
+        /* === FRANQUIAS GRID (Estilo Glass + Marca Glow) === */
+        .franquias-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-bottom: 30px; }
+
+        .franquia-card {
+            background: var(--card-bg);
+            backdrop-filter: var(--card-blur);
+            border-radius: 18px;
+            padding: 20px;
+            border: 1px solid var(--card-border);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .franquia-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
+
+        /* Glow da marca na borda superior */
+        .franquia-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: var(--brand-color); box-shadow: 0 0 15px var(--brand-color);
+        }
+
+        /* Cores Específicas das Franquias (Definidas via variável inline no HTML) */
+        .franquia-card.bc { --brand-color: var(--color-bc); }
+        .franquia-card.cs { --brand-color: var(--color-cs); }
+        .franquia-card.kp { --brand-color: var(--color-kp); }
+        .franquia-card.pb { --brand-color: var(--color-pb); }
+        .franquia-card.id { --brand-color: var(--color-id); }
+
+        .franquia-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+        .franquia-icon {
+            width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 800; color: #fff;
+            background: linear-gradient(135deg, var(--brand-color), color-mix(in srgb, var(--brand-color) 60%, black));
+            box-shadow: 0 4px 10px color-mix(in srgb, var(--brand-color) 40%, transparent);
+        }
+        .franquia-name { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+
+        .metric-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; }
+        .metric-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; }
+        .metric-value { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+        .metric-value.highlight { font-size: 16px; color: var(--accent-success); text-shadow: 0 0 10px rgba(34, 197, 94, 0.3); }
+
+        /* Barra de Conversão Moderna */
+        .conversion-bar { margin-top: 18px; }
+        .conversion-label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 11px; font-weight: 600; }
+        .conversion-track {
+            height: 6px; background: rgba(255, 255, 255, 0.08); border-radius: 10px; overflow: hidden;
+        }
+        .conversion-fill {
+            height: 100%; border-radius: 10px; transition: width 1s ease-out;
+            background: linear-gradient(90deg, var(--brand-color), color-mix(in srgb, var(--brand-color) 80%, white));
+            box-shadow: 0 0 10px var(--brand-color);
+        }
+
+        /* === RESPONSIVO === */
+        @media (max-width: 1400px) {
+            .top-summary-area { grid-template-columns: 1fr; gap: 20px; }
+            .gauge-card { padding: 20px; }
+            .kpis-grid { grid-template-columns: repeat(3, 1fr); }
+            .franquias-grid { grid-template-columns: repeat(3, 1fr); }
+            .charts-3-col { grid-template-columns: 1fr 1fr; }
+            .charts-3-col > div:last-child { grid-column: span 2; }
+        }
+
+        @media (max-width: 992px) {
+             .kpis-grid { grid-template-columns: repeat(2, 1fr); }
+             .franquias-grid { grid-template-columns: repeat(2, 1fr); }
+             .charts-3-col { grid-template-columns: 1fr; }
+             .charts-3-col > div:last-child { grid-column: span 1; }
+        }
+
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 15px; align-items: flex-start; }
+            .filters { width: 100%; justify-content: space-between; flex-wrap: wrap; }
+            .filter-group { flex: 1; min-width: 120px; }
+            .kpis-grid, .franquias-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-
     <div class="loading" id="loading">
         <div class="spinner"></div>
-        <div class="loading-text">Carregando Dashboard...</div>
+        <div class="loading-text">Carregando dados...</div>
     </div>
 
-    <div class="dashboard-wrapper">
-        
-        <header class="top-bar">
-            <div class="brand-area">
-                <img src="logo-policryl-branco.png" alt="Policryl" class="logo">
-                <div class="brand-text">
-                    <h1>COMMERCIAL DASHBOARD</h1>
-                    <span id="last-update">Atualizado: --:--</span>
+    <div class="container">
+        <header class="header">
+            <div class="logo-section">
+                <div class="logo">
+                    <img src="logo-policryl-branco.png" alt="Logo Policryl">
                 </div>
             </div>
-
-            <div class="gauge-container">
-                <div class="canvas-wrapper">
-                    <canvas id="gaugeChart"></canvas>
-                </div>
-                <div class="gauge-overlay">
-                    <span class="gauge-value" id="gauge-valor-anual">R$ 0,00</span>
-                    <span class="gauge-label">Meta Anual (<span id="gauge-percent">0%</span>)</span>
-                </div>
-            </div>
-
+            
             <div class="controls-area">
-                
-                <button class="btn-icon" type="button" onclick="toggleTheme()" title="Alternar Tema">
-                    <i class="ph ph-moon" id="theme-icon"></i>
-                </button>
-
-                <div class="controls-column">
-                    <div class="filter-wrapper">
-                        <button class="btn-filter" type="button" onclick="toggleFilterMenu()">
-                            FILTRAR <i class="ph ph-caret-down"></i>
-                        </button>
-                        
-                        <div class="filter-dropdown" id="filter-menu">
-                            <div class="filter-group">
-                                <label>ANO</label>
-                                <select id="filterAno" class="custom-select" style="width:100%"></select>
-                            </div>
-                            <div class="filter-group">
-                                <label>MÊS</label>
-                                <select id="filterMes" class="custom-select" style="width:100%"></select>
-                            </div>
-                            <div class="filter-group">
-                                <label>LINHA / FRANQUIA</label>
-                                <select id="filterLinha" class="custom-select" style="width:100%">
-                                    <option value="todas">Todas as Linhas</option>
-                                    <option value="FRA - Brasil Cacau">Brasil Cacau</option>
-                                    <option value="FRA - Cacau Show">Cacau Show</option>
-                                    <option value="FRA - Kopenhagen">Kopenhagen</option>
-                                    <option value="IND - Industries">Industries</option>
-                                    <option value="PLB - PolyBee">PolyBee</option>
-                                    <option value="SKD - Skullderia">Skullderia</option>
-                                </select>
-                            </div>
-                            
-                            <div class="filter-actions">
-                                <button class="btn-apply" type="button" onclick="applyFilters()">Aplicar Filtros</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <span class="timer-display" id="countdown">--:--</span>
-                        <select id="refreshSelect" class="custom-select" onchange="updateRefreshTime()">
-                            <option value="30">30 seg (Teste)</option>
-                            <option value="60">1 min</option>
-                            <option value="120">2 min</option>
-                            <option value="300">5 min</option>
-                            <option value="600" selected>10 min</option>
-                            <option value="900">15 min</option>
-                            <option value="1800">30 min</option>
-                        </select>
-                    </div>
+                <div class="theme-toggle" onclick="toggleTheme()">
+                    <div class="toggle-dot"><i class="ph-bold ph-moon"></i></div>
                 </div>
 
+                <div class="actions-row">
+                    <button class="btn-filter" onclick="toggleFilterMenu()">
+                        FILTRAR <i class="ph-bold ph-caret-down"></i>
+                    </button>
+                    
+                    <div class="filter-dropdown" id="filterMenu">
+                        <div class="f-group">
+                            <label>ANO</label>
+                            <select id="filterAno" class="f-select"></select>
+                        </div>
+                        <div class="f-group">
+                            <label>MÊS</label>
+                            <select id="filterMes" class="f-select"></select>
+                        </div>
+                        <div class="f-group">
+                            <label>LINHA</label>
+                            <select id="filterLinha" class="f-select">
+                                <option value="todas">Todas as Linhas</option>
+                                <option value="FRA - Brasil Cacau">Brasil Cacau</option>
+                                <option value="FRA - Cacau Show">Cacau Show</option>
+                                <option value="FRA - Kopenhagen">Kopenhagen</option>
+                                <option value="IND - Industries">Industries</option>
+                                <option value="PLB - PolyBee">PolyBee</option>
+                            </select>
+                        </div>
+                        <button class="btn-apply" onclick="applyFilters()">Aplicar Filtros</button>
+                    </div>
+                </div>
+                <select id="refreshSelect" class="time-select" onchange="updateRefreshTime()">
+                        <option value="30">30 seg</option>
+                        <option value="60">1 min</option>
+                        <option value="300">5 min</option>
+                        <option value="600" selected>10 min</option>
+                    </select>
+                <div class="timer-text" id="countdown">Refresh em: 00:00</div>
             </div>
         </header>
 
-        <section class="kpi-row">
-            <div class="card kpi-main">
-                <span class="card-label">META DO MÊS</span>
-                <h2 id="metaMes">R$ 0,00</h2>
-                <span class="card-sub" id="mesRef">--/--</span>
-            </div>
+        <div class="top-summary-area">
             
-            <div class="card kpi-main">
-                <span class="card-label">META DO DIA (ACUMULADA)</span>
-                <h2 id="metaDia">R$ 0,00</h2>
-                <span class="card-sub">Esperado até hoje</span>
+            <div class="gauge-card">
+                <div class="canvas-wrapper">
+                    <canvas id="gaugeChart"></canvas>
+                </div>
+                <div class="gauge-footer">
+                    <div class="gauge-main-value" id="gaugeValor">R$ 0,00</div>
+                    <div class="gauge-sub-label">Total Vendido (Ano)</div>
+                    <div class="gauge-meta-target" id="gaugeMeta">Meta: R$ 0,00</div>
+                </div>
             </div>
 
-            <div class="card kpi-main highlight">
-                <span class="card-label">VALOR EM VENDAS</span>
-                <h2 id="valorVendas">R$ 0,00</h2>
-                <span class="card-sub">Total Faturado</span>
+            <div class="kpis-grid">
+                <div class="kpi-card primary">
+                    <div class="kpi-label">Meta do Mês</div>
+                    <div class="kpi-value" id="metaMes">R$ 0</div>
+                    <div class="kpi-subtitle" id="mesRef">--/--</div>
+                </div>
+                <div class="kpi-card primary">
+                    <div class="kpi-label">Meta Diária (Acumulada)</div>
+                    <div class="kpi-value" id="metaDia">R$ 0</div>
+                    <div class="kpi-subtitle">Esperado até hoje</div>
+                </div>
+                <div class="kpi-card success">
+                    <div class="kpi-label">Valor em Vendas</div>
+                    <div class="kpi-value" id="valorVendas">R$ 0</div>
+                    <div class="kpi-subtitle">Total Faturado no Mês</div>
+                </div>
+                <div class="kpi-card danger">
+                    <div class="kpi-label">Pedidos em Atraso</div>
+                    <div class="kpi-value" id="pedidosAtraso">0</div>
+                    <div class="kpi-subtitle">Atenção Necessária (Geral)</div>
+                </div>
+                <div class="kpi-card warning">
+                    <div class="kpi-label">Pedidos à Liberar</div>
+                    <div class="kpi-value" id="pedidosLiberar">0</div>
+                    <div class="kpi-subtitle">Aguardando Aprovação (Geral)</div>
+                </div>
+                <div class="kpi-card info">
+                    <div class="kpi-label">Pedidos Faturados</div>
+                    <div class="kpi-value" id="pedidosExpedidos">0</div>
+                    <div class="kpi-subtitle">Na Expedição/Expedidos (Mês)</div>
+                </div>
             </div>
+        </div>
 
-            <div class="card kpi-status status-blue">
-                <span class="card-label">PEDIDOS EM CASA</span>
-                <h2 id="pedidosEmCasa">0</h2>
-                <span class="card-sub">Aprovados</span>
+        <div class="section-row">
+            <div class="franquias-grid">
+                <div class="franquia-card bc">
+                    <div class="franquia-header">
+                        <div class="franquia-icon">BC</div>
+                        <div class="franquia-name">Brasil Cacau</div>
+                    </div>
+                    <div class="franquia-metrics">
+                        <div class="metric-row"><span class="metric-label">Nº Orçamentos</span><span class="metric-value" id="bc-qtd-orc">0</span></div>
+                        <div class="metric-row"><span class="metric-label">Valor Orç.</span><span class="metric-value" id="bc-val-orc">R$ 0</span></div>
+                        <div class="metric-row"><span class="metric-label">Nº Pedidos</span><span class="metric-value" id="bc-qtd-ped">0</span></div>
+                        <div class="metric-row"><span class="metric-label">Venda</span><span class="metric-value highlight" id="bc-val-ped">R$ 0</span></div>
+                        <div class="metric-row"><span class="metric-label">Ticket Méd.</span><span class="metric-value" id="bc-ticket">R$ 0</span></div>
+                    </div>
+                    <div class="conversion-bar">
+                        <div class="conversion-label">
+                            <span style="color: var(--text-secondary);">Conversão ($)</span>
+                            <span style="color: var(--text-primary); font-weight: 700;" id="bc-conversao">0%</span>
+                        </div>
+                        <div class="conversion-track"><div class="conversion-fill" id="bc-conversao-bar" style="width:0%"></div></div>
+                    </div>
+                </div>
+
+                <div class="franquia-card cs">
+                    <div class="franquia-header">
+                        <div class="franquia-icon">CS</div>
+                        <div class="franquia-name">Cacau Show</div>
+                    </div>
+                    <div class="franquia-metrics">
+                        <div class="metric-row"><span class="metric-label">Nº Orçamentos</span><span class="metric-value" id="cs-qtd-orc">0</span></div>
+                        <div class="metric-row"><span class="metric-label">Valor Orç.</span><span class="metric-value" id="cs-val-orc">R$ 0</span></div>
+                        <div class="metric-row"><span class="metric-label">Nº Pedidos</span><span class="metric-value" id="cs-qtd-ped">0</span></div>
+                        <div class="metric-row"><span class="metric-label">Venda</span><span class="metric-value highlight" id="cs-val-ped">R$ 0</span></div>
+                        <div class="metric-row"><span class="metric-label">Ticket Méd.</span><span class="metric-value" id="cs-ticket">R$ 0</span></div>
+                    </div>
+                    <div class="conversion-bar">
+                        <div class="conversion-label">
+                            <span style="color: var(--text-secondary);">Conversão ($)</span>
+                            <span style="color: var(--text-primary); font-weight: 700;" id="cs-conversao">0%</span>
+                        </div>
+                        <div class="conversion-track"><div class="conversion-fill" id="cs-conversao-bar" style="width:0%"></div></div>
+                    </div>
+                </div>
+
+                <div class="franquia-card kp">
+                    <div class="franquia-header">
+                        <div class="franquia-icon">KP</div>
+                        <div class="franquia-name">Kopenhagen</div>
+                    </div>
+                    <div class="franquia-metrics">
+                        <div class="metric-row"><span class="metric-label">Nº Orçamentos</span><span class="metric-value" id="kp-qtd-orc">0</span></div>
+                        <div class="metric-row"><span class="metric-label">Valor Orç.</span><span class="metric-value" id="kp-val-orc">R$ 0</span></div>
+                        <div class="metric-row"><span class="metric-label">Nº Pedidos</span><span class="metric-value" id="kp-qtd-ped">0</span></div>
+                        <div class="metric-row"><span class="metric-label">Venda</span><span class="metric-value highlight" id="kp-val-ped">R$ 0</span></div>
+                        <div class="metric-row"><span class="metric-label">Ticket Méd.</span><span class="metric-value" id="kp-ticket">R$ 0</span></div>
+                    </div>
+                    <div class="conversion-bar">
+                        <div class="conversion-label">
+                            <span style="color: var(--text-secondary);">Conversão ($)</span>
+                            <span style="color: var(--text-primary); font-weight: 700;" id="kp-conversao">0%</span>
+                        </div>
+                        <div class="conversion-track"><div class="conversion-fill" id="kp-conversao-bar" style="width:0%"></div></div>
+                    </div>
+                </div>
+
+                <div class="franquia-card id">
+                    <div class="franquia-header">
+                        <div class="franquia-icon">ID</div>
+                        <div class="franquia-name">Industries</div>
+                    </div>
+                    <div class="franquia-metrics">
+                        <div class="metric-row"><span class="metric-label">Nº Orçamentos</span><span class="metric-value" id="id-qtd-orc">0</span></div>
+                        <div class="metric-row"><span class="metric-label">Valor Orç.</span><span class="metric-value" id="id-val-orc">R$ 0</span></div>
+                        <div class="metric-row"><span class="metric-label">Nº Pedidos</span><span class="metric-value" id="id-qtd-ped">0</span></div>
+                        <div class="metric-row"><span class="metric-label">Venda</span><span class="metric-value highlight" id="id-val-ped">R$ 0</span></div>
+                        <div class="metric-row"><span class="metric-label">Ticket Méd.</span><span class="metric-value" id="id-ticket">R$ 0</span></div>
+                    </div>
+                    <div class="conversion-bar">
+                        <div class="conversion-label">
+                            <span style="color: var(--text-secondary);">Conversão ($)</span>
+                            <span style="color: var(--text-primary); font-weight: 700;" id="id-conversao">0%</span>
+                        </div>
+                        <div class="conversion-track"><div class="conversion-fill" id="id-conversao-bar" style="width:0%"></div></div>
+                    </div>
+                </div>
+
+                <div class="franquia-card pb">
+                    <div class="franquia-header">
+                        <div class="franquia-icon">PB</div>
+                        <div class="franquia-name">PolyBee</div>
+                    </div>
+                    <div class="franquia-metrics">
+                        <div class="metric-row"><span class="metric-label">Nº Orçamentos</span><span class="metric-value" id="pb-qtd-orc">0</span></div>
+                        <div class="metric-row"><span class="metric-label">Valor Orç.</span><span class="metric-value" id="pb-val-orc">R$ 0</span></div>
+                        <div class="metric-row"><span class="metric-label">Nº Pedidos</span><span class="metric-value" id="pb-qtd-ped">0</span></div>
+                        <div class="metric-row"><span class="metric-label">Venda</span><span class="metric-value highlight" id="pb-val-ped">R$ 0</span></div>
+                        <div class="metric-row"><span class="metric-label">Ticket Méd.</span><span class="metric-value" id="pb-ticket">R$ 0</span></div>
+                    </div>
+                    <div class="conversion-bar">
+                        <div class="conversion-label">
+                            <span style="color: var(--text-secondary);">Conversão ($)</span>
+                            <span style="color: var(--text-primary); font-weight: 700;" id="pb-conversao">0%</span>
+                        </div>
+                        <div class="conversion-track"><div class="conversion-fill" id="pb-conversao-bar" style="width:0%"></div></div>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <div class="card kpi-status status-orange">
-                <span class="card-label">PEDIDOS À LIBERAR</span>
-                <h2 id="pedidosLiberar">0</h2>
-                <span class="card-sub">Atenção Necessária</span>
+        <div class="section-row">
+            <div class="chart-card historico-card">
+                <div class="chart-title"><i class="ph-bold ph-chart-line-up"></i> Histórico Mensal: Orçamentos vs Vendas vs Meta</div>
+                <div class="historico-chart">
+                    <canvas id="historicoChart"></canvas>
+                </div>
             </div>
+        </div>
 
-            <div class="card kpi-status status-green">
-                <span class="card-label">PEDIDOS FATURADOS</span>
-                <h2 id="pedidosFaturados">0</h2>
-                <span class="card-sub">Na expedição/Expedidos</span>
+        <div class="charts-3-col">
+            <div class="chart-card">
+                <div class="chart-title"><i class="ph-bold ph-credit-card"></i> Formas de Pagamento</div>
+                <div class="chart-container-small">
+                    <canvas id="pagamentoChart"></canvas>
+                </div>
             </div>
-        </section>
-
-        <section class="franchise-grid" id="franchise-container">
-            </section>
-
+            <div class="chart-card">
+                <div class="chart-title"><i class="ph-bold ph-map-pin"></i> Pedidos por Região</div>
+                <div class="chart-container-small">
+                    <canvas id="regiaoChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title"><i class="ph-bold ph-arrows-counter-clockwise"></i> Primeira vs Recompra</div>
+                <div class="chart-container-small">
+                    <canvas id="compraChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // === 1. CONFIGURAÇÕES ===
-        const CONFIG = {
-            CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQKstKflONSWvQ6xfVkMdM53mveopLXVGNv9CyQT0kRbjdI7IGIVzvvMPLSXNyQ-xZTQEvDmKr1jI_I/pub?gid=1199309873&single=true&output=csv',
-            
-            // CONFIGURAÇÃO DAS METAS POR ANO (COM CENTAVOS)
-            METAS_POR_ANO: {
-                "2024": {
-                    total: 8500000.00,
-                    trimestres: [1275000, 2975000, 2975000, 1275000]
-                },
-                "2025": {
-                    // Valor exato: 7.897.826,66
-                    total: 7897826.66,
-                    // Divisão proporcional aproximada
-                    trimestres: [1184674.00, 2764239.33, 2764239.33, 1184674.00]
-                },
-                "2026": {
-                    total: 10000000.00,
-                    trimestres: [1500000, 3500000, 3500000, 1500000]
-                }
-            }
+        // ================= CONFIGURAÇÕES GLOBAIS =================
+        // URL do CSV (Google Sheets publicado)
+        const CSV_URL_DASH = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQKstKflONSWvQ6xfVkMdM53mveopLXVGNv9CyQT0kRbjdI7IGIVzvvMPLSXNyQ-xZTQEvDmKr1jI_I/pub?gid=1199309873&single=true&output=csv';
+
+        // Metas Manuais por Ano (para o Velocímetro)
+        // Ajuste estes valores conforme necessário.
+        const METAS_ANUAIS = {
+            "2024": 8500000.00, // Exemplo: 8.5 Milhões
+            "2025": 12000000.00, // Exemplo: 12 Milhões
+            "2026": 15000000.00  // Exemplo: 15 Milhões
         };
 
-        // === 2. MAPEAMENTO DAS COLUNAS ===
+        // Mapeamento de Colunas do CSV (Índices base zero)
         const COLS = {
             ANO:0, MES:1, LINHA:2,
             META_MES:3, META_DIARIA:4,
-            QTDE_ORCAMENTOS:6, VALOR_ORCAMENTOS:7, 
-            QTDE_PEDIDOS:13, VALOR_PEDIDOS:14, 
+            QTDE_ORCAMENTOS:6, VALOR_ORCAMENTOS:7,
+            QTDE_PEDIDOS:13, VALOR_PEDIDOS:14,
+            PEDIDOS_PIX:19, VALORES_PIX:20, PEDIDOS_CARTAO_CREDITO:21, VALORES_CARTAO_CREDITO:22, PEDIDOS_BOLETO:23, VALORES_BOLETO:24,
             PEDIDOS_ATRASADOS:25, PEDIDOS_A_LIBERAR:27,
-            PEDIDOS_FATURADOS_MES:28, PEDIDOS_EM_CASA: 26 
+            PEDIDOS_FATURADOS_MES:28, PEDIDOS_EXPEDIDOS_MES:29,
+            PRIMEIRA_COMPRA:32, RECOMPRA:33,
+            REGIAO_CENTRO_OESTE:34, REGIAO_NORDESTE:35, REGIAO_NORTE:36, REGIAO_SUDESTE:37, REGIAO_SUL:38
         };
 
-        // === 3. ESTADO GLOBAL ===
+        // Mapeamento de Meses
+        const MESES_MAP = {'JAN':'01','FEV':'02','MAR':'03','ABR':'04','MAI':'05','JUN':'06','JUL':'07','AGO':'08','SET':'09','OUT':'10','NOV':'11','DEZ':'12'};
+        const MESES_NOMES_COMPLETOS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+        // Variáveis de Estado
         let allData = [];
-        let gaugeChart = null;
-        let refreshTimer = null;
-        let secondsLeft = 600;
+        let gaugeChart, historicoChart, pagamentoChart, regiaoChart, compraChart;
 
-        // === 4. PLUGIN VELOCÍMETRO ===
-        const gaugeNeedle = {
-            id: 'gaugeNeedle',
-            afterDatasetDraw(chart) {
-                const { ctx, data, chartArea: { top, bottom, left, right, width, height } } = chart;
-                ctx.save();
-                
-                const valorTotal = data.datasets[0].needleValue || 0;
-                const metaTotal = data.datasets[0].metaTotal || 1;
-                
-                let percentage = valorTotal / metaTotal;
-                if (percentage > 1) percentage = 1;
-                if (percentage < 0) percentage = 0;
-
-                const cx = width / 2;
-                const cy = height - 5; 
-                const angle = Math.PI + (percentage * Math.PI); 
-
-                ctx.translate(cx, top + (height / 1.35)); 
-                ctx.rotate(angle);
-
-                ctx.beginPath();
-                ctx.moveTo(0, -4);
-                ctx.lineTo(height / 1.6, 0); 
-                ctx.lineTo(0, 4);
-                ctx.fillStyle = document.body.classList.contains('light-theme') ? '#333' : '#fff';
-                ctx.fill();
-                
-                ctx.beginPath();
-                ctx.arc(0, 0, 6, 0, Math.PI * 2);
-                ctx.fillStyle = '#6366f1';
-                ctx.fill();
-
-                ctx.restore();
-            }
-        };
-
-        // === 5. INICIALIZAÇÃO ===
-        document.addEventListener('DOMContentLoaded', () => {
-            initFilters();
-            initGauge();
-            loadSettings();
-            fetchSheetData();
-            startTimer();
-        });
-
-        // === 6. FETCH DADOS ===
-        async function fetchSheetData() {
-            try {
-                const loading = document.getElementById('loading');
-                if(loading) loading.style.display = 'flex';
-
-                const res = await fetch(`${CONFIG.CSV_URL}&cb=${Date.now()}`);
-                const txt = await res.text();
-                const rows = csvToArray(txt); 
-                
-                if (rows.length > 1) {
-                    allData = rows.slice(1);
-                    updateDashboard();
-                    updateLastUpdate();
-                }
-            } catch (e) {
-                console.error("Erro ao carregar CSV:", e);
-            } finally {
-                const loading = document.getElementById('loading');
-                if(loading) loading.style.display = 'none';
-            }
+        // ================= FUNÇÕES UTILITÁRIAS =================
+        // Formata moeda (R$ X.XXX,XX)
+        function formatCurrency(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0); }
+        // Formata número simples (X.XXX)
+        function formatNumber(v){ return new Intl.NumberFormat('pt-BR').format(v||0); }
+        // Formata porcentagem (XX.X%)
+        function formatPercent(v){ return (v||0).toFixed(1)+'%'; }
+        // Formata moeda abreviada (ex: 1.5M, 500K) para o gauge
+        function formatShortCurrency(num) {
+            if (num >= 1000000) return 'R$ ' + (num / 1000000).toFixed(1).replace('.', ',') + 'M';
+            if (num >= 1000) return 'R$ ' + (num / 1000).toFixed(0).replace('.', ',') + 'K';
+            return formatCurrency(num);
         }
 
-        // === 7. LÓGICA PRINCIPAL ===
-        function updateDashboard() {
-            const filters = getCurrentFilters();
-            
-            // FILTRO (Com suporte a 'todos')
-            const dadosFiltrados = allData.filter(row => {
-                const rowAno = String(row[COLS.ANO] || '').trim();
-                const rowMes = normalizarMes(row[COLS.MES]);
-                const rowLinha = String(row[COLS.LINHA] || '').trim().toLowerCase();
-                
-                const passaAno = filters.ano === 'todos' || rowAno === filters.ano;
-                const passaMes = filters.mes === 'todos' || rowMes === filters.mes;
-                const passaLinha = filters.linha === 'todas' || rowLinha === filters.linha.toLowerCase();
-
-                return passaAno && passaMes && passaLinha;
-            });
-
-            // SOMAS KPI
-            let totalMeta = 0, totalVendas = 0, totalFaturados = 0, totalEmCasa = 0;
-            dadosFiltrados.forEach(row => {
-                totalMeta += parseValue(row[COLS.META_MES]);
-                totalVendas += parseValue(row[COLS.VALOR_PEDIDOS]);
-                totalFaturados += parseValue(row[COLS.PEDIDOS_FATURADOS_MES]);
-                totalEmCasa += parseValue(row[COLS.PEDIDOS_EM_CASA]); 
-            });
-
-            // KPIs GERAIS (Sempre total se não tiver filtro de linha)
-            const dadosGerais = allData.filter(row => 
-                filters.linha === 'todas' || 
-                String(row[COLS.LINHA]).trim().toLowerCase() === filters.linha.toLowerCase()
-            );
-            const totalAtraso = dadosGerais.reduce((acc, row) => acc + parseValue(row[COLS.PEDIDOS_ATRASADOS]), 0);
-            const totalLiberar = dadosGerais.reduce((acc, row) => acc + parseValue(row[COLS.PEDIDOS_A_LIBERAR]), 0);
-
-            // META DIÁRIA (Lógica especial para 'Todos')
-            let metaDiaAcumulada = 0;
-            
-            if (filters.mes === 'todos' || filters.ano === 'todos') {
-                // Se estamos vendo múltiplos meses, a meta "acumulada até hoje" perde sentido estrito.
-                // Exibimos a meta total do período selecionado.
-                metaDiaAcumulada = totalMeta;
-            } else {
-                // Mês específico selecionado
-                const diasNoMes = new Date(filters.ano, filters.mes, 0).getDate();
-                const hoje = new Date();
-                const isMesAtual = (parseInt(filters.mes) === (hoje.getMonth() + 1)) && (parseInt(filters.ano) === hoje.getFullYear());
-                const diasCorridos = isMesAtual ? hoje.getDate() : diasNoMes;
-                metaDiaAcumulada = (totalMeta / diasNoMes) * diasCorridos;
-            }
-
-            // ATUALIZA HTML
-            setText('metaMes', formatCurrency(totalMeta));
-            setText('metaDia', formatCurrency(metaDiaAcumulada));
-            setText('valorVendas', formatCurrency(totalVendas));
-            setText('pedidosFaturados', formatNumber(totalFaturados));
-            setText('pedidosLiberar', formatNumber(totalLiberar));
-            setText('pedidosEmCasa', formatNumber(totalEmCasa)); 
-            
-            // Texto de referência
-            const txtMes = filters.mes === 'todos' ? 'Todos' : filters.mes;
-            const txtAno = filters.ano === 'todos' ? 'Todos' : filters.ano;
-            setText('mesRef', `${txtMes}/${txtAno}`);
-
-            // RENDERIZA FRANQUIAS
-            updateFranquias(allData, filters);
-
-            // ATUALIZA VELOCÍMETRO
-            updateGauge(filters.ano);
+        // Converte string de valor do CSV para float
+        function parseValue(v){
+            if (!v && v!==0) return 0;
+            if (typeof v==='number') return v;
+            // Remove R$, pontos de milhar e espaços, troca vírgula por ponto
+            const cleaned = String(v).replace(/[R$\s.]/g,'').replace(',','.');
+            return parseFloat(cleaned)||0;
         }
 
-        function updateFranquias(data, filters) {
-            const container = document.getElementById('franchise-container');
-            container.innerHTML = ''; 
-
-            const ids = [
-                { cod: 'bc', nome: 'FRA - Brasil Cacau', cor: '#f97316' },
-                { cod: 'cs', nome: 'FRA - Cacau Show', cor: '#8b4513' },
-                { cod: 'kp', nome: 'FRA - Kopenhagen', cor: '#e11d48' },
-                { cod: 'id', nome: 'IND - Industries', cor: '#3b82f6' },
-                { cod: 'pb', nome: 'PLB - PolyBee', cor: '#fbbf24' }
-            ];
-
-            ids.forEach(franq => {
-                const fRows = data.filter(r => {
-                    const rowAno = String(r[COLS.ANO]).trim();
-                    const rowMes = normalizarMes(r[COLS.MES]);
-                    
-                    const passaAno = filters.ano === 'todos' || rowAno === filters.ano;
-                    const passaMes = filters.mes === 'todos' || rowMes === filters.mes;
-                    
-                    return passaAno && passaMes && String(r[COLS.LINHA]).trim().toLowerCase() === franq.nome.toLowerCase();
-                });
-
-                let fValOrc = 0, fValPed = 0, fQtdPed = 0, fQtdOrc = 0;
-                fRows.forEach(r => {
-                    fValOrc += parseValue(r[COLS.VALOR_ORCAMENTOS]);
-                    fValPed += parseValue(r[COLS.VALOR_PEDIDOS]);
-                    fQtdPed += parseValue(r[COLS.QTDE_PEDIDOS]);
-                    fQtdOrc += parseValue(r[COLS.QTDE_ORCAMENTOS]);
-                });
-
-                const ticket = fQtdPed > 0 ? fValPed / fQtdPed : 0;
-                const conversao = fValOrc > 0 ? (fValPed / fValOrc) * 100 : 0;
-
-                const cardHTML = `
-                <div class="franchise-card" style="border-top-color: ${franq.cor}">
-                    <div class="fra-header">
-                        <div class="fra-icon-box" style="border-color:${franq.cor}; color:${franq.cor}">
-                            <span style="font-weight:900; font-size:12px">${franq.cod.toUpperCase()}</span>
-                        </div>
-                        <div class="fra-title">
-                            <h3>${franq.nome.replace('FRA - ','').replace('IND - ','').replace('PLB - ','')}</h3>
-                            <span>${filters.mes === 'todos' ? 'Ano' : filters.mes}/${filters.ano === 'todos' ? 'Todos' : filters.ano}</span>
-                        </div>
-                    </div>
-                    <div class="fra-body">
-                        <div class="fra-row"><span class="fra-label">Nº Orçamentos</span><span class="fra-val">${formatNumber(fQtdOrc)}</span></div>
-                        <div class="fra-row"><span class="fra-label">Valor Orç.</span><span class="fra-val">${formatCurrency(fValOrc)}</span></div>
-                        <div class="fra-row"><span class="fra-label">Venda</span><span class="fra-val money">${formatCurrency(fValPed)}</span></div>
-                        <div class="fra-row"><span class="fra-label">Ticket Méd.</span><span class="fra-val">${formatCurrency(ticket)}</span></div>
-                        <div class="fra-row divider">
-                            <span class="fra-label">Conversão ($)</span>
-                            <span class="fra-val" style="color:${conversao >= 30 ? 'var(--status-green)' : 'var(--text-primary)'}">${conversao.toFixed(1)}%</span>
-                        </div>
-                    </div>
-                </div>`;
-                
-                container.innerHTML += cardHTML;
-            });
+        // Normaliza o mês para formato "01", "02"...
+        function normalizarMes(m){
+            const s = String(m||'').trim().toUpperCase();
+            if (MESES_MAP[s]) return MESES_MAP[s];
+            const n = parseInt(s,10);
+            if(!isNaN(n) && n>=1 && n<=12) return String(n).padStart(2,'0');
+            return '01'; // Default
         }
 
-        function updateGauge(ano) {
-            let metaTotal = 0;
-            let fatias = [1,1,1,1];
+        // Normaliza strings para comparação (remove acentos, lowercase)
+        const norm = (s) => String(s ?? '').normalize('NFD').replace(/\p{Diacritic}/gu, '').trim().toLowerCase();
 
-            if (ano === 'todos') {
-                // Soma metas de TODOS os anos configurados
-                Object.values(CONFIG.METAS_POR_ANO).forEach(conf => {
-                    metaTotal += conf.total;
-                });
-                // Fatias genéricas para 'todos'
-                fatias = [metaTotal*0.25, metaTotal*0.25, metaTotal*0.25, metaTotal*0.25];
-            } else {
-                const configAno = CONFIG.METAS_POR_ANO[ano];
-                // Fallback para 2025 se ano não estiver configurado
-                metaTotal = configAno ? configAno.total : 7897826.66;
-                fatias = configAno ? configAno.trimestres : [metaTotal*0.15, metaTotal*0.35, metaTotal*0.35, metaTotal*0.15];
-            }
-
-            // Calcula vendas com base no filtro de ano (se 'todos', soma tudo)
-            const dadosAno = allData.filter(r => {
-                const rowAno = String(r[COLS.ANO]).trim();
-                return ano === 'todos' || rowAno === ano;
-            });
-            
-            const totalVendido = dadosAno.reduce((acc, r) => acc + parseValue(r[COLS.VALOR_PEDIDOS]), 0);
-            
-            if(gaugeChart) {
-                gaugeChart.data.datasets[0].needleValue = totalVendido;
-                gaugeChart.data.datasets[0].metaTotal = metaTotal;
-                gaugeChart.data.datasets[0].data = fatias;
-                gaugeChart.update();
-            }
-            
-            setText('gauge-valor-anual', formatCurrency(totalVendido));
-            const pct = metaTotal > 0 ? (totalVendido / metaTotal) * 100 : 0;
-            setText('gauge-percent', pct.toFixed(1) + '%');
-        }
-
-        // === 8. CONTROLES ===
+        // Lê os filtros atuais da interface
         function getCurrentFilters(){
-            return {
-                ano: document.getElementById('filterAno').value,
-                mes: document.getElementById('filterMes').value,
-                linha: document.getElementById('filterLinha').value
-            };
-        }
-        function initFilters(){
-            const selAno = document.getElementById('filterAno');
-            const selMes = document.getElementById('filterMes');
+            const anoEl = document.getElementById('filterAno');
+            const mesEl = document.getElementById('filterMes');
+            const linhaEl = document.getElementById('filterLinha');
             
-            // Opção TODOS no Ano
-            selAno.add(new Option('Todos', 'todos'));
-            [2024, 2025, 2026, 2027].forEach(a => {
-                let opt = new Option(a, a);
-                if(a === new Date().getFullYear()) opt.selected = true;
-                selAno.add(opt);
-            });
+            const ano = anoEl.value;
+            const mes = mesEl.value;
+            const rawLinha = linhaEl.value;
+            const linha = (norm(rawLinha) === 'todas') ? 'todas' : rawLinha;
             
-            // Opção TODOS no Mês
-            selMes.add(new Option('Todos', 'todos'));
-            const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-            nomes.forEach((n,i) => {
-                let val = String(i+1).padStart(2,'0');
-                let opt = new Option(n, val);
-                if((i+1) === (new Date().getMonth() + 1)) opt.selected = true;
-                selMes.add(opt);
-            });
-        }
-        function toggleFilterMenu(){ 
-            document.getElementById('filter-menu').classList.toggle('active'); 
-        }
-        
-        function applyFilters(){ 
-            updateDashboard(); 
-            document.getElementById('filter-menu').classList.remove('active'); 
+            const mesNome = MESES_NOMES_COMPLETOS[parseInt(mes)-1];
+            return { ano, mes, linha, mesAnoRef: `${mesNome}/${ano}` };
         }
 
-        function initGauge(){
-            const ctx = document.getElementById('gaugeChart').getContext('2d');
-            gaugeChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['1º Tri', '2º Tri', '3º Tri', '4º Tri'],
-                    datasets: [{
-                        data: [1, 1, 1, 1], 
-                        backgroundColor: ['#334155', '#475569', '#64748b', '#94a3b8'],
-                        borderWidth: 0,
-                        cutout: '80%', 
-                        circumference: 180,
-                        rotation: -90,
-                        needleValue: 0,
-                        metaTotal: 1
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    layout: { padding: { bottom: 0, left:0, right:0, top:0 } },
-                    plugins: { legend: {display:false}, tooltip: {enabled:false} }
-                },
-                plugins: [gaugeNeedle]
-            });
-        }
-
-        // === 9. HELPERS ===
+        // ================= PARSER DE CSV =================
         function csvToArray(text){
-            const lines = text.split(/\r?\n/).filter(l => l.length>0);
+            // Divide por quebra de linha, ignorando linhas vazias
+            const lines = text.split(/\r?\n/).filter(l => l.length > 0);
             return lines.map(line => {
-                const out=[]; let cur='', q=false;
-                for (let i=0;i<line.length;i++){
-                    const ch=line[i];
+                const out = []; let cur = '', q = false;
+                for (let i=0; i<line.length; i++){
+                    const ch = line[i];
+                    // Lida com aspas duplas no CSV
                     if (ch === '"'){ if (q && line[i+1] === '"'){ cur+='"'; i++; } else { q=!q; } }
                     else if (ch === ',' && !q){ out.push(cur); cur=''; }
                     else { cur += ch; }
@@ -807,76 +682,553 @@
                 return out;
             });
         }
-        function parseValue(v){
-            if (!v && v!==0) return 0;
-            if (typeof v==='number') return v;
-            let s = String(v).replace('R$','').replace(/\./g,'').replace(',','.').trim();
-            return parseFloat(s)||0;
-        }
-        function formatCurrency(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0); }
-        function formatNumber(v){ return new Intl.NumberFormat('pt-BR').format(v||0); }
-        function setText(id, txt){ const el = document.getElementById(id); if(el) el.textContent = txt; }
-        function normalizarMes(m){ 
-            if(m === 'todos') return 'todos';
-            const n=parseInt(m,10); return isNaN(n)?'01':String(n).padStart(2,'0'); 
-        }
 
-        // Timer
-        function loadSettings(){
-            const savedTime = localStorage.getItem('dash_refresh_sec');
-            if(savedTime) {
-                secondsLeft = parseInt(savedTime);
-                document.getElementById('refreshSelect').value = savedTime;
-            }
-            const savedTheme = localStorage.getItem('dash_theme');
-            if(savedTheme === 'light') toggleTheme(true);
-        }
-
-        function updateRefreshTime(){
-            const val = document.getElementById('refreshSelect').value;
-            secondsLeft = parseInt(val);
-            localStorage.setItem('dash_refresh_sec', val);
-            startTimer();
-        }
-
-        function startTimer(){
-            clearInterval(refreshTimer);
-            const display = document.getElementById('countdown');
-            const total = parseInt(document.getElementById('refreshSelect').value);
-            let count = total;
+        // ================= CARREGAMENTO DE DADOS =================
+        async function fetchSheetData(){
+            const loadingEl = document.getElementById('loading');
+            if(loadingEl) loadingEl.style.display = 'flex';
             
-            refreshTimer = setInterval(() => {
-                count--;
-                let m = Math.floor(count/60);
-                let s = count%60;
-                display.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-                if(count<=0){
-                    fetchSheetData();
-                    count = total;
+            try {
+                // Adiciona timestamp para evitar cache do navegador
+                const url = `${CSV_URL_DASH}&cb=${Date.now()}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
+                const txt = await res.text();
+                const rows = csvToArray(txt);
+                
+                if (!rows || rows.length <= 1) throw new Error('CSV vazio ou inválido');
+                // Remove o cabeçalho (primeira linha)
+                allData = rows.slice(1);
+                console.log('Dados carregados:', allData.length, 'linhas');
+                return true;
+            } catch(e) {
+                console.error('Erro ao carregar dados:', e);
+                alert('Falha ao carregar dados. Verifique a conexão ou a URL do CSV.');
+                return false;
+            } finally {
+                if(loadingEl) loadingEl.style.display = 'none';
+            }
+        }
+
+        // ================= LÓGICA DO DASHBOARD =================
+        // Encontra a linha específica no CSV baseada nos filtros de Ano/Mês/Linha
+        function findDataRowForFilters(filters){
+            const linhaFiltroNorm = norm(filters.linha);
+            // Filtra os dados brutos
+            const dadosFiltrados = allData.filter(row => {
+                const rowAno = String(row[COLS.ANO] || '').trim();
+                const rowMes = normalizarMes(row[COLS.MES]);
+                const rowLinha = norm(row[COLS.LINHA]);
+                
+                const passaAno = rowAno === filters.ano;
+                const passaMes = rowMes === filters.mes;
+                // Se filtro é "todas", aceita qualquer linha, senão compara
+                const passaLinha = (linhaFiltroNorm === 'todas') || (rowLinha === linhaFiltroNorm);
+                
+                return passaAno && passaMes && passaLinha;
+            });
+
+            if (dadosFiltrados.length === 0) return null;
+            // Se houver apenas uma linha correspondente (ex: filtro por franquia específica)
+            if (dadosFiltrados.length === 1) return dadosFiltrados[0];
+
+            // Se houver múltiplas linhas (ex: filtro "Todas"), consolida somando os valores
+            // Cria um array "fake" preenchido com zeros para somar
+            const consolidado = new Array(Object.keys(COLS).length).fill(0);
+            dadosFiltrados.forEach(row => {
+                Object.values(COLS).forEach(colIndex => {
+                    // Soma apenas se for um valor numérico relevante
+                     if ([COLS.META_MES, COLS.META_DIARIA, COLS.VALOR_ORCAMENTOS, COLS.VALOR_PEDIDOS, COLS.PEDIDOS_FATURADOS_MES, COLS.PEDIDOS_EXPEDIDOS_MES].includes(colIndex)) {
+                         consolidado[colIndex] += parseValue(row[colIndex]);
+                     }
+                });
+            });
+            return consolidado;
+        }
+
+        // Função Principal de Atualização
+        async function updateDashboard(forceReload = false){
+            if (forceReload || allData.length === 0) {
+                const success = await fetchSheetData();
+                if(!success) return;
+            }
+
+            const filters = getCurrentFilters();
+            // Linha de dados específica para o mês/ano/franquia selecionados (para KPIs de Vendas/Meta)
+            const rowMensal = findDataRowForFilters(filters);
+
+            // --- CÁLCULO DOS TOTAIS GERAIS (Ignoram Ano/Mês) ---
+            // Filtra apenas pela linha selecionada (ou todas)
+            const linhaSelNorm = norm(filters.linha);
+            const rowsGeralLinha = allData.filter(r => 
+                (linhaSelNorm === 'todas') || (norm(r[COLS.LINHA]) === linhaSelNorm)
+            );
+
+            // Soma os pedidos em atraso e a liberar de TODA a base histórica da linha selecionada
+            const totalAtrasoGeral = rowsGeralLinha.reduce((s,r) => s + parseValue(r[COLS.PEDIDOS_ATRASADOS]), 0);
+            const totalLiberarGeral = rowsGeralLinha.reduce((s,r) => s + parseValue(r[COLS.PEDIDOS_A_LIBERAR]), 0);
+
+            // --- ATUALIZAÇÃO DOS CARDS DE KPI SUPERIORES ---
+            // Meta Mês
+            const metaMesVal = rowMensal ? parseValue(rowMensal[COLS.META_MES]) : 0;
+            document.getElementById('metaMes').textContent = formatCurrency(metaMesVal);
+            document.getElementById('mesRef').textContent = filters.mesAnoRef;
+
+            // Meta Diária (Cálculo proporcional: Meta Mês / Dias no Mês * Dias Corridos)
+            const now = new Date();
+            const selectedAnoInt = parseInt(filters.ano);
+            const selectedMesInt = parseInt(filters.mes);
+            // Total de dias no mês selecionado
+            const diasNoMes = new Date(selectedAnoInt, selectedMesInt, 0).getDate();
+            let diasCorridos = diasNoMes; // Default: mês fechado
+            
+            // Se for o mês e ano atuais, usa o dia de hoje
+            if (selectedAnoInt === now.getFullYear() && selectedMesInt === (now.getMonth() + 1)) {
+                diasCorridos = now.getDate();
+            }
+            // Evita divisão por zero
+            const metaDiaAcumulada = diasNoMes > 0 ? (metaMesVal / diasNoMes) * diasCorridos : 0;
+            document.getElementById('metaDia').textContent = formatCurrency(metaDiaAcumulada);
+
+            // Valor em Vendas (Faturado no mês)
+            const valorVendasVal = rowMensal ? parseValue(rowMensal[COLS.VALOR_PEDIDOS]) : 0;
+            document.getElementById('valorVendas').textContent = formatCurrency(valorVendasVal);
+
+            // Pedidos em Atraso (Geral)
+            document.getElementById('pedidosAtraso').textContent = formatNumber(totalAtrasoGeral);
+            
+            // Pedidos a Liberar (Geral)
+            document.getElementById('pedidosLiberar').textContent = formatNumber(totalLiberarGeral);
+
+            // Pedidos Faturados/Expedidos (No mês)
+            // *Nota: O CSV original usava PEDIDOS_EXPEDIDOS_MES para "Faturados". Mantive essa lógica.
+            // Se quiser usar a soma de Faturados + Expedidos, ajustaria aqui.
+            const pedidosExpedidosVal = rowMensal ? parseValue(rowMensal[COLS.PEDIDOS_EXPEDIDOS_MES]) : 0;
+            document.getElementById('pedidosExpedidos').textContent = formatNumber(pedidosExpedidosVal);
+
+            // --- ATUALIZAÇÃO DOS GRÁFICOS ---
+            updateGaugeChart(filters.ano);
+            updateHistoricoChart(filters.ano);
+            updatePagamentoChart(filters);
+            updateRegiaoChart(filters);
+            updateCompraChart(filters);
+            
+            // --- ATUALIZAÇÃO DOS CARDS DE FRANQUIA ---
+            updateFranquiasCards(filters);
+        }
+
+        // ================= ATUALIZAÇÃO DOS CARDS DE FRANQUIA =================
+        function updateFranquiasCards(filters){
+            const franquiasMap = [
+                { id: 'bc', nome: 'FRA - Brasil Cacau' },
+                { id: 'cs', nome: 'FRA - Cacau Show' },
+                { id: 'kp', nome: 'FRA - Kopenhagen' },
+                { id: 'id', nome: 'IND - Industries' },
+                { id: 'pb', nome: 'PLB - PolyBee' }
+            ];
+
+            franquiasMap.forEach(franq => {
+                // Filtra os dados para a franquia, ano e mês específicos
+                const fRows = allData.filter(r => 
+                    String(r[COLS.ANO]).trim() === filters.ano &&
+                    normalizarMes(r[COLS.MES]) === filters.mes &&
+                    norm(r[COLS.LINHA]) === norm(franq.nome)
+                );
+
+                let qtdOrc=0, valOrc=0, qtdPed=0, valPed=0;
+                
+                if (fRows.length > 0) {
+                    // Soma os valores (caso haja múltiplas linhas por erro no CSV, por segurança)
+                    qtdOrc = fRows.reduce((s,r) => s + parseValue(r[COLS.QTDE_ORCAMENTOS]), 0);
+                    valOrc = fRows.reduce((s,r) => s + parseValue(r[COLS.VALOR_ORCAMENTOS]), 0);
+                    qtdPed = fRows.reduce((s,r) => s + parseValue(r[COLS.QTDE_PEDIDOS]), 0);
+                    valPed = fRows.reduce((s,r) => s + parseValue(r[COLS.VALOR_PEDIDOS]), 0);
                 }
-            }, 1000);
+
+                // Cálculos
+                const ticket = qtdPed > 0 ? valPed / qtdPed : 0;
+                const conversao = valOrc > 0 ? (valPed / valOrc) * 100 : 0;
+
+                // Atualiza o DOM
+                document.getElementById(`${franq.id}-qtd-orc`).textContent = formatNumber(qtdOrc);
+                document.getElementById(`${franq.id}-val-orc`).textContent = formatCurrency(valOrc);
+                document.getElementById(`${franq.id}-qtd-ped`).textContent = formatNumber(qtdPed);
+                document.getElementById(`${franq.id}-val-ped`).textContent = formatCurrency(valPed);
+                document.getElementById(`${franq.id}-ticket`).textContent = formatCurrency(ticket);
+                document.getElementById(`${franq.id}-conversao`).textContent = formatPercent(conversao);
+                
+                // Atualiza a barra de conversão
+                const barFill = document.getElementById(`${franq.id}-conversao-bar`);
+                const width = Math.min(conversao, 100); // Limita a 100%
+                barFill.style.width = `${width}%`;
+            });
         }
 
-        function updateLastUpdate(){ 
-            document.getElementById('last-update').textContent = `Atualizado: ${new Date().toLocaleTimeString()}`; 
-        }
+        // ================= GRÁFICO: VELOCÍMETRO (Estilo "Enchimento") =================
+        function updateGaugeChart(ano) {
+            const canvas = document.getElementById('gaugeChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
 
-        function toggleTheme(forceLight = false){
-            const body = document.body;
-            const icon = document.getElementById('theme-icon');
-            const isLight = forceLight || !body.classList.contains('light-theme');
+            // 1. Define a Meta Anual e o Total Vendido no Ano
+            const metaAnual = METAS_ANUAIS[ano] || 10000000; // Fallback se ano não definido
             
-            if(isLight) {
-                body.classList.add('light-theme');
-                icon.classList.replace('ph-moon', 'ph-sun');
-                localStorage.setItem('dash_theme', 'light');
+            // Filtra todas as vendas do ano selecionado (todas as linhas, todos os meses)
+            const rowsAno = allData.filter(r => String(r[COLS.ANO]).trim() === ano);
+            const totalVendidoAno = rowsAno.reduce((s, r) => s + parseValue(r[COLS.VALOR_PEDIDOS]), 0);
+            
+            // Calcula a porcentagem
+            let percentage = (totalVendidoAno / metaAnual) * 100;
+            // Limita visualmente entre 0% e 100% para o gráfico não quebrar, 
+            // mas o valor numérico real pode passar.
+            const visualPercentage = Math.min(Math.max(percentage, 0), 100);
+            const remaining = 100 - visualPercentage;
+
+            // Atualiza textos do Gauge
+            document.getElementById('gaugeValor').textContent = formatCurrency(totalVendidoAno);
+            document.getElementById('gaugeMeta').textContent = `Meta ${ano}: ${formatShortCurrency(metaAnual)} (${percentage.toFixed(1)}%)`;
+
+            // Define a cor do gradiente baseado no progresso
+            let startColor, endColor;
+            if (visualPercentage < 40) {
+                startColor = '#ef4444'; endColor = '#f87171'; // Vermelho
+            } else if (visualPercentage < 80) {
+                startColor = '#f59e0b'; endColor = '#fbbf24'; // Amarelo/Laranja
             } else {
-                body.classList.remove('light-theme');
-                icon.classList.replace('ph-sun', 'ph-moon');
-                localStorage.setItem('dash_theme', 'dark');
+                startColor = '#22c55e'; endColor = '#4ade80'; // Verde
             }
-            if(gaugeChart) gaugeChart.update();
+
+            // Cria o gradiente no canvas
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+            gradient.addColorStop(0, startColor);
+            gradient.addColorStop(1, endColor);
+
+            // Configuração do Chart.js
+            const data = {
+                datasets: [{
+                    data: [visualPercentage, remaining],
+                    backgroundColor: [
+                        gradient, // Parte preenchida (colorida)
+                        'rgba(255, 255, 255, 0.05)' // Parte vazia (trilha escura)
+                    ],
+                    borderWidth: 0,
+                    borderRadius: [10, 0] // Arredonda a ponta da barra colorida
+                }]
+            };
+
+            const options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                rotation: -90,    // Começa do topo (para semicírculo)
+                circumference: 180, // Apenas meio círculo
+                cutout: '82%',    // Espessura da barra (quanto maior, mais fina)
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false } // Desabilita tooltip no gauge
+                }
+            };
+
+            if (gaugeChart) gaugeChart.destroy();
+            gaugeChart = new Chart(ctx, { type: 'doughnut', data: data, options: options });
         }
+
+        // ================= GRÁFICO: HISTÓRICO MENSAL =================
+        function updateHistoricoChart(ano) {
+            const canvas = document.getElementById('historicoChart');
+            if (!canvas) return;
+            
+            const labelsMeses = MESES_NOMES_COMPLETOS.map(m => m.substring(0, 3)); // Jan, Fev...
+            
+            const dataOrc = [];
+            const dataVen = [];
+            const dataMeta = [];
+
+            // Itera pelos 12 meses para coletar os dados do ano selecionado
+            for (let i = 1; i <= 12; i++) {
+                const mesNum = String(i).padStart(2, '0');
+                // Filtra dados do mês/ano (todas as linhas somadas)
+                const rowsMes = allData.filter(r => 
+                    String(r[COLS.ANO]).trim() === ano && 
+                    normalizarMes(r[COLS.MES]) === mesNum
+                );
+                
+                // Consolida os valores do mês
+                dataOrc.push(rowsMes.reduce((s,r) => s + parseValue(r[COLS.VALOR_ORCAMENTOS]), 0));
+                dataVen.push(rowsMes.reduce((s,r) => s + parseValue(r[COLS.VALOR_PEDIDOS]), 0));
+                // A meta geralmente é a mesma para todas as linhas no mesmo mês no seu CSV,
+                // pegamos a do primeiro registro ou somamos se a lógica de negócio for soma.
+                // Assumindo soma das metas das linhas:
+                dataMeta.push(rowsMes.reduce((s,r) => s + parseValue(r[COLS.META_MES]), 0));
+            }
+
+            // Configuração Visual Profissional
+            const commonOptions = {
+                borderWidth: 3,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                tension: 0.3 // Curva suave nas linhas
+            };
+
+            const data = {
+                labels: labelsMeses,
+                datasets: [
+                    {
+                        label: 'Orçamentos (R$)',
+                        data: dataOrc,
+                        borderColor: '#6366f1', // Indigo
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        ...commonOptions
+                    },
+                    {
+                        label: 'Vendas (R$)',
+                        data: dataVen,
+                        borderColor: '#22c55e', // Verde
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        fill: true,
+                        ...commonOptions
+                    },
+                    {
+                        label: 'Meta (R$)',
+                        data: dataMeta,
+                        borderColor: '#f59e0b', // Laranja
+                        borderDash: [5, 5], // Linha tracejada
+                        fill: false,
+                        pointStyle: 'rectRot',
+                        ...commonOptions,
+                        borderWidth: 2
+                    }
+                ]
+            };
+
+            const options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { color: '#94a3b8', usePointStyle: true, font: { size: 12 } }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 15, 30, 0.9)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#e2e8f0',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            label: (ctx) => ` ${ctx.dataset.label}: ${formatCurrency(ctx.raw)}`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: {
+                            color: '#94a3b8',
+                            callback: (value) => formatShortCurrency(value) // Abrevia valores no eixo Y
+                        }
+                    }
+                }
+            };
+
+            if (historicoChart) historicoChart.destroy();
+            historicoChart = new Chart(canvas.getContext('2d'), { type: 'line', data: data, options: options });
+        }
+
+        // ================= GRÁFICO: FORMAS DE PAGAMENTO =================
+        function updatePagamentoChart(filters) {
+            const canvas = document.getElementById('pagamentoChart');
+            if (!canvas) return;
+
+            // Obtém os dados filtrados (consolidado do mês/ano/linha)
+            const row = findDataRowForFilters(filters);
+            
+            // Extrai os valores
+            const valPix = row ? parseValue(row[COLS.VALORES_PIX]) : 0;
+            const valCredito = row ? parseValue(row[COLS.VALORES_CARTAO_CREDITO]) : 0;
+            const valBoleto = row ? parseValue(row[COLS.VALORES_BOLETO]) : 0;
+            const total = valPix + valCredito + valBoleto;
+
+            // Cores vibrantes para os segmentos
+            const colors = ['#22c55e', '#3b82f6', '#a855f7']; // Verde, Azul, Roxo
+
+            const data = {
+                labels: ['PIX', 'Cartão Crédito', 'Boleto'],
+                datasets: [{
+                    data: [valPix, valCredito, valBoleto],
+                    backgroundColor: colors,
+                    borderColor: 'rgba(10, 10, 20, 1)', // Borda escura para separar
+                    borderWidth: 2,
+                    hoverOffset: 6
+                }]
+            };
+
+            const options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%', // Rosquinha mais fina
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#94a3b8', padding: 15, usePointStyle: true }
+                    },
+                    tooltip: {
+                         backgroundColor: 'rgba(15, 15, 30, 0.9)',
+                         callbacks: {
+                             label: (ctx) => {
+                                 const val = ctx.raw;
+                                 const perc = total > 0 ? (val / total * 100).toFixed(1) + '%' : '0%';
+                                 return ` ${ctx.label}: ${formatCurrency(val)} (${perc})`;
+                             }
+                         }
+                    }
+                }
+            };
+
+            if (pagamentoChart) pagamentoChart.destroy();
+            pagamentoChart = new Chart(canvas.getContext('2d'), { type: 'doughnut', data: data, options: options });
+        }
+
+        // ================= GRÁFICO: PEDIDOS POR REGIÃO =================
+        function updateRegiaoChart(filters) {
+             const canvas = document.getElementById('regiaoChart');
+             if (!canvas) return;
+             
+             const row = findDataRowForFilters(filters);
+             
+             const regions = [
+                 { label: 'Centro-Oeste', val: row ? parseValue(row[COLS.REGIAO_CENTRO_OESTE]) : 0 },
+                 { label: 'Nordeste',    val: row ? parseValue(row[COLS.REGIAO_NORDESTE]) : 0 },
+                 { label: 'Norte',       val: row ? parseValue(row[COLS.REGIAO_NORTE]) : 0 },
+                 { label: 'Sudeste',     val: row ? parseValue(row[COLS.REGIAO_SUDESTE]) : 0 },
+                 { label: 'Sul',         val: row ? parseValue(row[COLS.REGIAO_SUL]) : 0 }
+             ];
+
+             // Ordena por valor decrescente para visual melhor
+             regions.sort((a, b) => b.val - a.val);
+
+             const data = {
+                 labels: regions.map(r => r.label),
+                 datasets: [{
+                     label: 'Nº Pedidos',
+                     data: regions.map(r => r.val),
+                     // Gradiente vertical nas barras
+                     backgroundColor: (ctx) => {
+                        const bg = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
+                        bg.addColorStop(0, '#6366f1'); // Indigo forte
+                        bg.addColorStop(1, 'rgba(99, 102, 241, 0.3)'); // Indigo transparente
+                        return bg;
+                     },
+                     borderRadius: 6, // Barras arredondadas
+                     borderWidth: 0,
+                     barPercentage: 0.6
+                 }]
+             };
+
+             const options = {
+                 responsive: true,
+                 maintainAspectRatio: false,
+                 indexAxis: 'y', // Gráfico de barras horizontal
+                 plugins: {
+                     legend: { display: false },
+                     tooltip: {
+                         backgroundColor: 'rgba(15, 15, 30, 0.9)',
+                         callbacks: { label: (ctx) => ` Pedidos: ${formatNumber(ctx.raw)}` }
+                     }
+                 },
+                 scales: {
+                     x: {
+                         grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                         ticks: { color: '#94a3b8', font: { size: 11 } }
+                     },
+                     y: {
+                         grid: { display: false },
+                         ticks: { color: '#e2e8f0', font: { weight: '500' } }
+                     }
+                 }
+             };
+
+             if (regiaoChart) regiaoChart.destroy();
+             regiaoChart = new Chart(canvas.getContext('2d'), { type: 'bar', data: data, options: options });
+        }
+
+        // ================= GRÁFICO: PRIMEIRA COMPRA vs RECOMPRA =================
+        function updateCompraChart(filters) {
+            const canvas = document.getElementById('compraChart');
+            if (!canvas) return;
+            
+            const row = findDataRowForFilters(filters);
+            const valPrimeira = row ? parseValue(row[COLS.PRIMEIRA_COMPRA]) : 0;
+            const valRecompra = row ? parseValue(row[COLS.RECOMPRA]) : 0;
+            const total = valPrimeira + valRecompra;
+
+            const data = {
+                labels: ['Primeira Compra', 'Recompra'],
+                datasets: [{
+                    data: [valPrimeira, valRecompra],
+                    backgroundColor: ['#f59e0b', '#0ea5e9'], // Laranja e Azul claro
+                    borderColor: 'rgba(10, 10, 20, 1)',
+                    borderWidth: 2,
+                }]
+            };
+
+            const options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#94a3b8', padding: 15, usePointStyle: true }
+                    },
+                    tooltip: {
+                         backgroundColor: 'rgba(15, 15, 30, 0.9)',
+                         callbacks: {
+                             label: (ctx) => {
+                                 const val = ctx.raw;
+                                 const perc = total > 0 ? (val / total * 100).toFixed(1) + '%' : '0%';
+                                 return ` ${ctx.label}: ${formatNumber(val)} pedidos (${perc})`;
+                             }
+                         }
+                    }
+                }
+            };
+
+            if (compraChart) compraChart.destroy();
+            compraChart = new Chart(canvas.getContext('2d'), { type: 'pie', data: data, options: options });
+        }
+
+        // ================= INICIALIZAÇÃO =================
+        function initSelects() {
+            // Preenche o select de Meses
+            const mesSelect = document.getElementById('filterMes');
+            const now = new Date();
+            const currentMonth = now.getMonth(); // 0-indexado (0 = Jan)
+
+            MESES_NOMES_COMPLETOS.forEach((nome, index) => {
+                const option = document.createElement('option');
+                option.value = String(index + 1).padStart(2, '0'); // "01", "02"...
+                option.text = nome;
+                if (index === currentMonth) {
+                    option.selected = true;
+                }
+                mesSelect.appendChild(option);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initSelects();
+            updateDashboard(true); // Primeira carga forçada
+
+            // Auto-refresh a cada 5 minutos (300000 ms) sem travar a tela
+            setInterval(() => updateDashboard(true), 300000);
+        });
     </script>
 </body>
 </html>
