@@ -180,6 +180,7 @@
         }
         .btn-filter:hover { background: var(--accent); color: white; }
 
+        /* Menu Filtro */
         .filter-wrapper { position: relative; }
         .filter-dropdown {
             position: absolute;
@@ -196,11 +197,32 @@
         }
         .filter-dropdown.active { display: flex; }
         .filter-group label { display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 5px; font-weight: 600; }
-        .btn-apply {
-            background: var(--accent); border: none; padding: 12px;
-            color: white; font-weight: bold; border-radius: 6px; cursor: pointer;
-            width: 100%;
+        
+        /* Container dos botões do filtro */
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
         }
+
+        .btn-apply {
+            background: var(--accent); border: none; padding: 10px;
+            color: white; font-weight: bold; border-radius: 6px; cursor: pointer;
+            flex: 1; /* Ocupa metade */
+            font-size: 0.85rem;
+        }
+        .btn-apply:hover { opacity: 0.9; }
+
+        .btn-clear {
+            background: transparent; 
+            border: 1px solid var(--bg-card-border); 
+            padding: 10px;
+            color: var(--text-secondary); font-weight: 600; border-radius: 6px; cursor: pointer;
+            flex: 1; /* Ocupa metade */
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .btn-clear:hover { border-color: var(--status-red); color: var(--status-red); }
 
         /* === KPIS ROW === */
         .kpi-row {
@@ -371,7 +393,11 @@
                                     <option value="SKD - Skullderia">Skullderia</option>
                                 </select>
                             </div>
-                            <button class="btn-apply" onclick="applyFilters()">Aplicar Filtros</button>
+                            
+                            <div class="filter-actions">
+                                <button class="btn-clear" onclick="clearFilters()">Limpar</button>
+                                <button class="btn-apply" onclick="applyFilters()">Aplicar</button>
+                            </div>
                         </div>
                     </div>
 
@@ -440,21 +466,21 @@
         const CONFIG = {
             CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQKstKflONSWvQ6xfVkMdM53mveopLXVGNv9CyQT0kRbjdI7IGIVzvvMPLSXNyQ-xZTQEvDmKr1jI_I/pub?gid=1199309873&single=true&output=csv',
             
-            // AQUI VOCÊ EDITA OS VALORES DOS "GOMOS" DO GRÁFICO POR ANO
+            // CONFIGURAÇÃO DAS METAS POR ANO (COM CENTAVOS)
             METAS_POR_ANO: {
                 "2024": {
-                    total: 8500000,
+                    total: 8500000.00,
                     // [1ºTrim, 2ºTrim, 3ºTrim, 4ºTrim]
                     trimestres: [1275000, 2975000, 2975000, 1275000]
                 },
                 "2025": {
-                    total: 9000000,
-                    // Exemplo 15% | 35% | 35% | 15%
-                    trimestres: [1350000, 3150000, 3150000, 1350000]
+                    // Valor exato solicitado: 7.897.826,66
+                    total: 7897826.66,
+                    // Divisão proporcional para fechar a conta (15% | 35% | 35% | 15%)
+                    trimestres: [1184674.00, 2764239.33, 2764239.33, 1184674.00]
                 },
                 "2026": {
-                    total: 10000000,
-                    // Exemplo escalado
+                    total: 10000000.00,
                     trimestres: [1500000, 3500000, 3500000, 1500000]
                 }
             }
@@ -745,7 +771,23 @@
             });
         }
         function toggleFilterMenu(){ document.getElementById('filter-menu').classList.toggle('active'); }
-        function applyFilters(){ updateDashboard(); toggleFilterMenu(); }
+        
+        function applyFilters(){ 
+            updateDashboard(); 
+            toggleFilterMenu(); 
+        }
+
+        // Função Limpar Filtros
+        function clearFilters() {
+            const now = new Date();
+            // Reseta para Data Atual
+            document.getElementById('filterAno').value = now.getFullYear();
+            document.getElementById('filterMes').value = String(now.getMonth() + 1).padStart(2, '0');
+            document.getElementById('filterLinha').value = 'todas';
+            
+            updateDashboard();
+            toggleFilterMenu(); // Fecha o menu
+        }
 
         function initGauge(){
             const ctx = document.getElementById('gaugeChart').getContext('2d');
