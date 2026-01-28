@@ -13,10 +13,10 @@
     <style>
         /* === VARIÁVEIS DE TEMA === */
         :root {
-            /* Palette Dark baseada nas referências */
-            --bg-app: #12122b;       /* Fundo profundo */
-            --bg-header: #1a1640;    /* Roxo escuro */
-            --bg-card: #201c4e;      /* Azul/Roxo cards */
+            /* Palette Dark */
+            --bg-app: #12122b;       
+            --bg-header: #1a1640;    
+            --bg-card: #201c4e;      
             --bg-card-border: #363275; 
             
             --text-primary: #ffffff;
@@ -64,13 +64,12 @@
             height: 100vh;
         }
 
-        /* === HEADER CORRIGIDO === */
+        /* === HEADER === */
         .top-bar {
             background: var(--bg-header);
             border-radius: var(--radius);
             border: 1px solid var(--bg-card-border);
             padding: 0 30px;
-            /* Aumentei a altura para caber o gráfico sem cortar */
             height: 220px; 
             display: grid;
             grid-template-columns: 25% 50% 25%;
@@ -85,7 +84,7 @@
         .brand-text h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: 1px; line-height: 1; }
         .brand-text span { font-size: 0.8rem; color: var(--text-secondary); display: block; margin-top: 5px; }
 
-        /* Gauge Area (Velocímetro) */
+        /* Gauge Area */
         .gauge-container {
             position: relative;
             height: 100%;
@@ -97,7 +96,6 @@
             padding-bottom: 20px;
         }
         
-        /* Wrapper para forçar tamanho do canvas e não estourar */
         .canvas-wrapper {
             position: relative;
             height: 140px; 
@@ -105,7 +103,6 @@
         }
 
         .gauge-overlay {
-            /* Ajustado para não sobrepor a agulha */
             margin-top: -10px; 
             text-align: center;
             z-index: 10;
@@ -157,7 +154,6 @@
             margin-right: 5px;
         }
         
-        /* Selects Customizados */
         select.custom-select {
             background: var(--bg-app);
             border: 1px solid var(--bg-card-border);
@@ -184,7 +180,6 @@
         }
         .btn-filter:hover { background: var(--accent); color: white; }
 
-        /* Menu Filtro */
         .filter-wrapper { position: relative; }
         .filter-dropdown {
             position: absolute;
@@ -231,7 +226,6 @@
         .kpi-main.highlight h2 { color: var(--status-green); }
         .card-sub { font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px; opacity: 0.8; }
 
-        /* Cards Coloridos */
         .kpi-status { border-top: 5px solid; justify-content: space-between; }
         .kpi-status h2 { font-size: 2.5rem; font-weight: 800; line-height: 1; margin: 10px 0; }
         
@@ -254,7 +248,7 @@
             padding: 20px;
             display: flex; flex-direction: column; justify-content: space-between;
             box-shadow: var(--shadow);
-            border-top: 4px solid; /* A cor vem do inline style no JS */
+            border-top: 4px solid; 
         }
 
         .fra-header {
@@ -301,11 +295,11 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         .loading-text { margin-top: 15px; color: var(--accent); font-weight: 600; font-family: var(--font-main); }
 
-        /* === RESPONSIVIDADE TV 4K === */
+        /* === RESPONSIVIDADE === */
         @media (min-width: 1920px) {
             html { font-size: 20px; } 
             .dashboard-wrapper { padding: 30px; gap: 30px; }
-            .top-bar { height: 260px; } /* Mais altura para TV grande */
+            .top-bar { height: 260px; }
             .canvas-wrapper { width: 360px; height: 180px; }
         }
         
@@ -446,12 +440,23 @@
         const CONFIG = {
             CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQKstKflONSWvQ6xfVkMdM53mveopLXVGNv9CyQT0kRbjdI7IGIVzvvMPLSXNyQ-xZTQEvDmKr1jI_I/pub?gid=1199309873&single=true&output=csv',
             
-            // AQUI VOCÊ EDITA A META DE CADA ANO
-            METAS_ANUAIS: {
-                2024: 8500000,
-                2025: 9000000,
-                2026: 10000000,
-                2027: 12000000
+            // AQUI VOCÊ EDITA OS VALORES DOS "GOMOS" DO GRÁFICO POR ANO
+            METAS_POR_ANO: {
+                "2024": {
+                    total: 8500000,
+                    // [1ºTrim, 2ºTrim, 3ºTrim, 4ºTrim]
+                    trimestres: [1275000, 2975000, 2975000, 1275000]
+                },
+                "2025": {
+                    total: 9000000,
+                    // Exemplo 15% | 35% | 35% | 15%
+                    trimestres: [1350000, 3150000, 3150000, 1350000]
+                },
+                "2026": {
+                    total: 10000000,
+                    // Exemplo escalado
+                    trimestres: [1500000, 3500000, 3500000, 1500000]
+                }
             }
         };
 
@@ -485,14 +490,11 @@
                 if (percentage > 1) percentage = 1;
                 if (percentage < 0) percentage = 0;
 
-                // Centro do gráfico
                 const cx = width / 2;
                 const cy = height - 5; 
-
-                // Angulo
                 const angle = Math.PI + (percentage * Math.PI); 
 
-                ctx.translate(cx, top + (height / 1.35)); // Pivot Point
+                ctx.translate(cx, top + (height / 1.35)); 
                 ctx.rotate(angle);
 
                 // Desenha a Agulha
@@ -571,7 +573,7 @@
                 totalEmCasa += parseValue(row[COLS.PEDIDOS_EM_CASA]); 
             });
 
-            // KPIs GERAIS (Independente de mês)
+            // KPIs GERAIS
             const dadosGerais = allData.filter(row => 
                 filters.linha === 'todas' || 
                 String(row[COLS.LINHA]).trim().toLowerCase() === filters.linha.toLowerCase()
@@ -600,7 +602,7 @@
             // RENDERIZA FRANQUIAS
             updateFranquias(allData, filters);
 
-            // ATUALIZA VELOCÍMETRO (Meta Anual Dinâmica)
+            // ATUALIZA VELOCÍMETRO (Com lógica de ano)
             updateGauge(filters.ano);
         }
 
@@ -662,29 +664,29 @@
         }
 
         function updateGauge(ano) {
-            // Busca a meta no CONFIG ou usa default
-            const metaDoAno = CONFIG.METAS_ANUAIS[ano] || 9000000;
+            // 1. Busca configuração do ano específico
+            const configAno = CONFIG.METAS_POR_ANO[ano];
+            
+            // 2. Se não existir configuração pro ano, usa um fallback (2025)
+            const metaTotal = configAno ? configAno.total : 9000000;
+            const fatias = configAno ? configAno.trimestres : [2250000, 2250000, 2250000, 2250000];
 
-            // Soma vendas do ano todo
+            // 3. Soma vendas reais do ano
             const dadosAno = allData.filter(r => String(r[COLS.ANO]).trim() === ano);
-            const totalAno = dadosAno.reduce((acc, r) => acc + parseValue(r[COLS.VALOR_PEDIDOS]), 0);
+            const totalVendido = dadosAno.reduce((acc, r) => acc + parseValue(r[COLS.VALOR_PEDIDOS]), 0);
             
             if(gaugeChart) {
-                gaugeChart.data.datasets[0].needleValue = totalAno;
-                gaugeChart.data.datasets[0].metaTotal = metaDoAno; 
+                gaugeChart.data.datasets[0].needleValue = totalVendido;
+                gaugeChart.data.datasets[0].metaTotal = metaTotal;
                 
-                // Recalcula fatias proporcionais (15% - 35% - 35% - 15%)
-                const p1 = metaDoAno * 0.15;
-                const p2 = metaDoAno * 0.35;
-                const p3 = metaDoAno * 0.35;
-                const p4 = metaDoAno * 0.15;
-                gaugeChart.data.datasets[0].data = [p1, p2, p3, p4];
+                // 4. Atualiza os gomos (slices) com os valores configurados
+                gaugeChart.data.datasets[0].data = fatias;
                 
                 gaugeChart.update();
             }
             
-            setText('gauge-valor-anual', formatCurrency(totalAno));
-            const pct = (totalAno / metaDoAno) * 100;
+            setText('gauge-valor-anual', formatCurrency(totalVendido));
+            const pct = metaTotal > 0 ? (totalVendido / metaTotal) * 100 : 0;
             setText('gauge-percent', pct.toFixed(1) + '%');
         }
 
