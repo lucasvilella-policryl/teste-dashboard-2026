@@ -206,23 +206,12 @@
         }
 
         .btn-apply {
-            background: var(--accent); border: none; padding: 10px;
+            background: var(--accent); border: none; padding: 12px;
             color: white; font-weight: bold; border-radius: 6px; cursor: pointer;
-            flex: 1; 
-            font-size: 0.85rem;
+            width: 100%;
+            font-size: 0.9rem;
         }
         .btn-apply:hover { opacity: 0.9; }
-
-        .btn-clear {
-            background: transparent; 
-            border: 1px solid var(--bg-card-border); 
-            padding: 10px;
-            color: var(--text-secondary); font-weight: 600; border-radius: 6px; cursor: pointer;
-            flex: 1; 
-            font-size: 0.85rem;
-            transition: all 0.2s;
-        }
-        .btn-clear:hover { border-color: var(--status-red); color: var(--status-red); background: rgba(239, 68, 68, 0.1); }
 
         /* === KPIS ROW === */
         .kpi-row {
@@ -395,8 +384,7 @@
                             </div>
                             
                             <div class="filter-actions">
-                                <button class="btn-clear" type="button" onclick="clearFilters()">Limpar</button>
-                                <button class="btn-apply" type="button" onclick="applyFilters()">Aplicar</button>
+                                <button class="btn-apply" type="button" onclick="applyFilters()">Aplicar Filtros</button>
                             </div>
                         </div>
                     </div>
@@ -574,14 +562,14 @@
         function updateDashboard() {
             const filters = getCurrentFilters();
             
-            // FILTRO
+            // FILTRO (Com suporte a 'todos')
             const dadosFiltrados = allData.filter(row => {
                 const rowAno = String(row[COLS.ANO] || '').trim();
                 const rowMes = normalizarMes(row[COLS.MES]);
                 const rowLinha = String(row[COLS.LINHA] || '').trim().toLowerCase();
                 
-                const passaAno = rowAno === filters.ano;
-                const passaMes = rowMes === filters.mes;
+                const passaAno = filters.ano === 'todos' || rowAno === filters.ano;
+                const passaMes = filters.mes === 'todos' || rowMes === filters.mes;
                 const passaLinha = filters.linha === 'todas' || rowLinha === filters.linha.toLowerCase();
 
                 return passaAno && passaMes && passaLinha;
@@ -596,7 +584,7 @@
                 totalEmCasa += parseValue(row[COLS.PEDIDOS_EM_CASA]); 
             });
 
-            // KPIs GERAIS
+            // KPIs GERAIS (Sempre total se não tiver filtro de linha)
             const dadosGerais = allData.filter(row => 
                 filters.linha === 'todas' || 
                 String(row[COLS.LINHA]).trim().toLowerCase() === filters.linha.toLowerCase()
@@ -604,12 +592,21 @@
             const totalAtraso = dadosGerais.reduce((acc, row) => acc + parseValue(row[COLS.PEDIDOS_ATRASADOS]), 0);
             const totalLiberar = dadosGerais.reduce((acc, row) => acc + parseValue(row[COLS.PEDIDOS_A_LIBERAR]), 0);
 
-            // META DIÁRIA
-            const diasNoMes = new Date(filters.ano, filters.mes, 0).getDate();
-            const hoje = new Date();
-            const isMesAtual = (parseInt(filters.mes) === (hoje.getMonth() + 1)) && (parseInt(filters.ano) === hoje.getFullYear());
-            const diasCorridos = isMesAtual ? hoje.getDate() : diasNoMes;
-            const metaDiaAcumulada = (totalMeta / diasNoMes) * diasCorridos;
+            // META DIÁRIA (Lógica especial para 'Todos')
+            let metaDiaAcumulada = 0;
+            
+            if (filters.mes === 'todos' || filters.ano === 'todos') {
+                // Se estamos vendo múltiplos meses, a meta "acumulada até hoje" perde sentido estrito.
+                // Exibimos a meta total do período selecionado.
+                metaDiaAcumulada = totalMeta;
+            } else {
+                // Mês específico selecionado
+                const diasNoMes = new Date(filters.ano, filters.mes, 0).getDate();
+                const hoje = new Date();
+                const isMesAtual = (parseInt(filters.mes) === (hoje.getMonth() + 1)) && (parseInt(filters.ano) === hoje.getFullYear());
+                const diasCorridos = isMesAtual ? hoje.getDate() : diasNoMes;
+                metaDiaAcumulada = (totalMeta / diasNoMes) * diasCorridos;
+            }
 
             // ATUALIZA HTML
             setText('metaMes', formatCurrency(totalMeta));
@@ -618,7 +615,11 @@
             setText('pedidosFaturados', formatNumber(totalFaturados));
             setText('pedidosLiberar', formatNumber(totalLiberar));
             setText('pedidosEmCasa', formatNumber(totalEmCasa)); 
-            setText('mesRef', `${filters.mes}/${filters.ano}`);
+            
+            // Texto de referência
+            const txtMes = filters.mes === 'todos' ? 'Todos' : filters.mes;
+            const txtAno = filters.ano === 'todos' ? 'Todos' : filters.ano;
+            setText('mesRef', `${txtMes}/${txtAno}`);
 
             // RENDERIZA FRANQUIAS
             updateFranquias(allData, filters);
@@ -640,11 +641,15 @@
             ];
 
             ids.forEach(franq => {
-                const fRows = data.filter(r => 
-                    String(r[COLS.ANO]).trim() === filters.ano &&
-                    normalizarMes(r[COLS.MES]) === filters.mes &&
-                    String(r[COLS.LINHA]).trim().toLowerCase() === franq.nome.toLowerCase()
-                );
+                const fRows = data.filter(r => {
+                    const rowAno = String(r[COLS.ANO]).trim();
+                    const rowMes = normalizarMes(r[COLS.MES]);
+                    
+                    const passaAno = filters.ano === 'todos' || rowAno === filters.ano;
+                    const passaMes = filters.mes === 'todos' || rowMes === filters.mes;
+                    
+                    return passaAno && passaMes && String(r[COLS.LINHA]).trim().toLowerCase() === franq.nome.toLowerCase();
+                });
 
                 let fValOrc = 0, fValPed = 0, fQtdPed = 0, fQtdOrc = 0;
                 fRows.forEach(r => {
@@ -665,7 +670,7 @@
                         </div>
                         <div class="fra-title">
                             <h3>${franq.nome.replace('FRA - ','').replace('IND - ','').replace('PLB - ','')}</h3>
-                            <span>${filters.mes}/${filters.ano}</span>
+                            <span>${filters.mes === 'todos' ? 'Ano' : filters.mes}/${filters.ano === 'todos' ? 'Todos' : filters.ano}</span>
                         </div>
                     </div>
                     <div class="fra-body">
@@ -685,12 +690,29 @@
         }
 
         function updateGauge(ano) {
-            const configAno = CONFIG.METAS_POR_ANO[ano];
-            // Se não tiver meta configurada, fallback para 2025
-            const metaTotal = configAno ? configAno.total : 7897826.66;
-            const fatias = configAno ? configAno.trimestres : [1184674, 2764239, 2764239, 1184674];
+            let metaTotal = 0;
+            let fatias = [1,1,1,1];
 
-            const dadosAno = allData.filter(r => String(r[COLS.ANO]).trim() === ano);
+            if (ano === 'todos') {
+                // Soma metas de TODOS os anos configurados
+                Object.values(CONFIG.METAS_POR_ANO).forEach(conf => {
+                    metaTotal += conf.total;
+                });
+                // Fatias genéricas para 'todos'
+                fatias = [metaTotal*0.25, metaTotal*0.25, metaTotal*0.25, metaTotal*0.25];
+            } else {
+                const configAno = CONFIG.METAS_POR_ANO[ano];
+                // Fallback para 2025 se ano não estiver configurado
+                metaTotal = configAno ? configAno.total : 7897826.66;
+                fatias = configAno ? configAno.trimestres : [metaTotal*0.15, metaTotal*0.35, metaTotal*0.35, metaTotal*0.15];
+            }
+
+            // Calcula vendas com base no filtro de ano (se 'todos', soma tudo)
+            const dadosAno = allData.filter(r => {
+                const rowAno = String(r[COLS.ANO]).trim();
+                return ano === 'todos' || rowAno === ano;
+            });
+            
             const totalVendido = dadosAno.reduce((acc, r) => acc + parseValue(r[COLS.VALOR_PEDIDOS]), 0);
             
             if(gaugeChart) {
@@ -705,7 +727,7 @@
             setText('gauge-percent', pct.toFixed(1) + '%');
         }
 
-        // === 8. CONTROLES (COM CORREÇÃO DE LIMPAR) ===
+        // === 8. CONTROLES ===
         function getCurrentFilters(){
             return {
                 ano: document.getElementById('filterAno').value,
@@ -717,12 +739,16 @@
             const selAno = document.getElementById('filterAno');
             const selMes = document.getElementById('filterMes');
             
+            // Opção TODOS no Ano
+            selAno.add(new Option('Todos', 'todos'));
             [2024, 2025, 2026, 2027].forEach(a => {
                 let opt = new Option(a, a);
                 if(a === new Date().getFullYear()) opt.selected = true;
                 selAno.add(opt);
             });
             
+            // Opção TODOS no Mês
+            selMes.add(new Option('Todos', 'todos'));
             const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
             nomes.forEach((n,i) => {
                 let val = String(i+1).padStart(2,'0');
@@ -740,20 +766,6 @@
             document.getElementById('filter-menu').classList.remove('active'); 
         }
 
-        // FUNÇÃO LIMPAR CORRIGIDA
-        function clearFilters() {
-            const now = new Date();
-            const currentYear = String(now.getFullYear());
-            const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
-
-            document.getElementById('filterAno').value = currentYear;
-            document.getElementById('filterMes').value = currentMonth;
-            document.getElementById('filterLinha').value = 'todas';
-            
-            updateDashboard();
-            document.getElementById('filter-menu').classList.remove('active');
-        }
-
         function initGauge(){
             const ctx = document.getElementById('gaugeChart').getContext('2d');
             gaugeChart = new Chart(ctx, {
@@ -761,7 +773,7 @@
                 data: {
                     labels: ['1º Tri', '2º Tri', '3º Tri', '4º Tri'],
                     datasets: [{
-                        data: [1, 1, 1, 1], // Placeholder
+                        data: [1, 1, 1, 1], 
                         backgroundColor: ['#334155', '#475569', '#64748b', '#94a3b8'],
                         borderWidth: 0,
                         cutout: '80%', 
@@ -804,7 +816,10 @@
         function formatCurrency(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0); }
         function formatNumber(v){ return new Intl.NumberFormat('pt-BR').format(v||0); }
         function setText(id, txt){ const el = document.getElementById(id); if(el) el.textContent = txt; }
-        function normalizarMes(m){ const n=parseInt(m,10); return isNaN(n)?'01':String(n).padStart(2,'0'); }
+        function normalizarMes(m){ 
+            if(m === 'todos') return 'todos';
+            const n=parseInt(m,10); return isNaN(n)?'01':String(n).padStart(2,'0'); 
+        }
 
         // Timer
         function loadSettings(){
