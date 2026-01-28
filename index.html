@@ -5,14 +5,312 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Comercial - Policryl</title>
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* === VARIÁVEIS DE TEMA (DARK/LIGHT) === */
+        :root {
+            /* Padrão DARK */
+            --bg-app: #0f0c29;
+            --bg-header: #1a1640;
+            --bg-card: #201c4e;
+            --bg-card-border: #363275;
+            
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --accent: #6366f1; /* Indigo */
+            
+            --status-blue: #3b82f6;
+            --status-orange: #f97316;
+            --status-green: #22c55e;
+            --status-red: #ef4444;
+            
+            --font-main: 'Inter', sans-serif;
+            --radius: 16px;
+            --shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        /* Tema LIGHT (Ativado via JS) */
+        body.light-theme {
+            --bg-app: #f1f5f9;
+            --bg-header: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card-border: #cbd5e1;
+            
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        /* === RESET & BASE === */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-app);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .dashboard-wrapper {
+            padding: 1.5vh 1.5vw;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100vh;
+        }
+
+        /* === HEADER === */
+        .top-bar {
+            background: var(--bg-header);
+            border-radius: var(--radius);
+            border: 1px solid var(--bg-card-border);
+            padding: 0 30px;
+            height: 170px; /* Altura fixa para acomodar o gauge */
+            display: grid;
+            grid-template-columns: 25% 50% 25%; /* Logo - Gauge - Controles */
+            align-items: center;
+            position: relative;
+            box-shadow: var(--shadow);
+        }
+
+        /* Logo Area */
+        .brand-area { display: flex; align-items: center; gap: 20px; }
+        .logo { height: 55px; width: auto; }
+        .brand-text h1 { font-size: 1.1rem; font-weight: 800; letter-spacing: 1px; }
+        .brand-text span { font-size: 0.8rem; color: var(--text-secondary); display: block; margin-top: 4px; }
+
+        /* Gauge (Velocímetro) Area */
+        .gauge-container {
+            position: relative;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 5px;
+        }
+        .gauge-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0; right: 0;
+            text-align: center;
+            z-index: 10;
+            pointer-events: none; /* Deixa clicar no gráfico se precisar */
+        }
+        .gauge-value {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--text-primary);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            display: block;
+            line-height: 1.2;
+        }
+        .gauge-label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Controles Area */
+        .controls-area {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Botão Tema */
+        .btn-icon {
+            background: rgba(128, 128, 128, 0.1);
+            border: 1px solid var(--bg-card-border);
+            color: var(--text-primary);
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .btn-icon:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+        /* Timer */
+        .timer-control {
+            text-align: right;
+            display: flex; flex-direction: column; align-items: flex-end;
+        }
+        .timer-row { display: flex; gap: 8px; align-items: baseline; }
+        .timer-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
+        .timer-display { font-family: 'Courier New', monospace; font-size: 1.2rem; font-weight: 700; color: var(--accent); }
+        .timer-settings select {
+            background: transparent; border: none; color: var(--text-secondary);
+            font-size: 0.75rem; cursor: pointer; text-align: right; margin-top: 2px;
+            font-family: var(--font-main);
+        }
+        .timer-settings select:focus { outline: none; color: var(--accent); }
+
+        /* Filtro Dropdown */
+        .filter-wrapper { position: relative; }
+        .btn-filter {
+            background: var(--bg-card);
+            border: 1px solid var(--accent);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
+            transition: all 0.2s;
+            font-family: var(--font-main);
+        }
+        .btn-filter:hover { background: var(--accent); color: white; }
+
+        .filter-dropdown {
+            position: absolute;
+            top: 120%; right: 0;
+            background: var(--bg-header);
+            border: 1px solid var(--bg-card-border);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            width: 280px;
+            display: none; /* Escondido por padrão */
+            z-index: 100;
+            flex-direction: column; gap: 15px;
+        }
+        .filter-dropdown.active { display: flex; }
+
+        .filter-group label { display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 5px; font-weight: 600; }
+        .filter-group select {
+            width: 100%; padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--bg-card-border);
+            color: var(--text-primary);
+            border-radius: 6px;
+            font-family: var(--font-main);
+        }
+        body.light-theme .filter-group select { background: #f1f5f9; }
+
+        .btn-apply {
+            background: var(--accent); border: none; padding: 12px;
+            color: white; font-weight: bold; border-radius: 6px; cursor: pointer;
+            width: 100%; transition: opacity 0.2s;
+        }
+        .btn-apply:hover { opacity: 0.9; }
+
+        /* === KPIS ROW === */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1.2vw;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--bg-card-border);
+            border-radius: var(--radius);
+            padding: 20px 15px;
+            display: flex; flex-direction: column; justify-content: center;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            min-height: 140px;
+        }
+
+        .card-label { font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .kpi-main h2 { font-size: 1.6rem; font-weight: 800; margin: 5px 0; color: var(--text-primary); }
+        .kpi-main.highlight h2 { color: var(--status-green); }
+        .card-sub { font-size: 0.75rem; color: var(--text-secondary); opacity: 0.8; }
+
+        /* Cards Coloridos (Status) */
+        .kpi-status { border-top-width: 4px; border-top-style: solid; justify-content: space-between; }
+        .kpi-status h2 { font-size: 2.2rem; font-weight: 800; line-height: 1; margin: 10px 0; }
+        
+        .status-blue { border-top-color: var(--status-blue); }
+        .status-orange { border-top-color: var(--status-orange); }
+        .status-green { border-top-color: var(--status-green); }
+        .status-red { border-top-color: var(--status-red); }
+
+        /* === GRID FRANQUIAS === */
+        .franchise-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1.2vw;
+            flex: 1; /* Ocupa o resto da tela */
+            min-height: 0; /* Fix para scroll interno se precisar */
+        }
+
+        .franchise-card {
+            background: var(--bg-card);
+            border: 1px solid var(--bg-card-border);
+            border-radius: var(--radius);
+            padding: 15px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            box-shadow: var(--shadow);
+            border-top-width: 4px; border-top-style: solid;
+        }
+
+        .fra-header {
+            display: flex; align-items: center; gap: 10px;
+            padding-bottom: 12px; border-bottom: 1px solid var(--bg-card-border);
+            margin-bottom: 10px;
+        }
+        .fra-icon {
+            width: 36px; height: 36px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; color: #fff; font-size: 0.8rem;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .fra-title h3 { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+
+        .fra-body { display: flex; flex-direction: column; gap: 8px; }
+        .fra-row { display: flex; justify-content: space-between; align-items: baseline; }
+        .fra-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
+        .fra-val { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+        .fra-val.money { color: var(--status-green); font-weight: 700; font-size: 1.1rem; }
+        
+        .fra-row.divider {
+            border-top: 1px dashed var(--bg-card-border);
+            padding-top: 8px; margin-top: 4px;
+        }
+
+        /* === LOADING OVERLAY === */
+        .loading {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 12, 41, 0.95);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 9999;
+        }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { margin-top: 15px; color: var(--accent); font-weight: 600; }
+
+        /* === MEDIA QUERIES (TV 4K) === */
+        @media (min-width: 1920px) {
+            html { font-size: 20px; } /* Aumenta escala geral */
+            .kpi-row { gap: 20px; }
+            .franchise-grid { gap: 20px; }
+        }
+
+        @media (max-width: 1366px) {
+            html { font-size: 14px; }
+            .kpi-row { grid-template-columns: repeat(3, 1fr); gap: 15px; }
+            .franchise-grid { overflow-y: auto; padding-bottom: 20px; }
+        }
+    </style>
 </head>
 <body>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Atualizando Dashboard...</div>
+    </div>
 
     <div class="dashboard-wrapper">
         
@@ -34,7 +332,7 @@
             </div>
 
             <div class="controls-area">
-                <button class="btn-icon" onclick="toggleTheme()" title="Mudar Tema">
+                <button class="btn-icon" onclick="toggleTheme()" title="Alternar Tema">
                     <i class="ph ph-moon" id="theme-icon"></i>
                 </button>
 
@@ -44,8 +342,8 @@
                         <span class="timer-display" id="countdown">00:00</span>
                     </div>
                     <div class="timer-settings">
-                        <select id="refresh-select" onchange="changeRefreshTime()">
-                            <option value="30">30 seg</option>
+                        <select id="refreshSelect" onchange="updateRefreshTime()">
+                            <option value="30">30 seg (Teste)</option>
                             <option value="300">5 min</option>
                             <option value="600" selected>10 min</option>
                         </select>
@@ -87,47 +385,467 @@
         <section class="kpi-row">
             <div class="card kpi-main">
                 <span class="card-label">META DO MÊS</span>
-                <h2 id="kpi-meta-mes">R$ 0,00</h2>
-                <span class="card-sub" id="label-mes-ref">--/--</span>
+                <h2 id="metaMes">R$ 0,00</h2>
+                <span class="card-sub" id="mesRef">--/--</span>
             </div>
             
             <div class="card kpi-main">
                 <span class="card-label">META DO DIA (ACUMULADA)</span>
-                <h2 id="kpi-meta-dia">R$ 0,00</h2>
+                <h2 id="metaDia">R$ 0,00</h2>
                 <span class="card-sub">Esperado até hoje</span>
             </div>
 
             <div class="card kpi-main highlight">
                 <span class="card-label">VALOR EM VENDAS</span>
-                <h2 id="kpi-vendas">R$ 0,00</h2>
+                <h2 id="valorVendas">R$ 0,00</h2>
                 <span class="card-sub">Total Faturado</span>
             </div>
 
             <div class="card kpi-status status-blue">
-                <span class="card-label">PEDIDOS EM CASA</span>
-                <h2 id="kpi-em-casa">0</h2>
-                <span class="card-sub">Aprovados</span>
+                <span class="card-label">PEDIDOS EXPEDIDOS</span>
+                <h2 id="pedidosExpedidos">0</h2>
+                <span class="card-sub">Entregues no mês</span>
             </div>
 
             <div class="card kpi-status status-orange">
                 <span class="card-label">PEDIDOS À LIBERAR</span>
-                <h2 id="kpi-liberar">0</h2>
-                <span class="card-sub">Atenção Necessária</span>
+                <h2 id="pedidosLiberar">0</h2>
+                <span class="card-sub">Aguardando aprovação</span>
             </div>
 
-            <div class="card kpi-status status-green">
-                <span class="card-label">PEDIDOS FATURADOS</span>
-                <h2 id="kpi-faturados">0</h2>
-                <span class="card-sub">Na expedição/Expedidos</span>
+            <div class="card kpi-status status-red">
+                <span class="card-label">PEDIDOS EM ATRASO</span>
+                <h2 id="pedidosAtraso">0</h2>
+                <span class="card-sub">Atenção Necessária</span>
             </div>
         </section>
 
         <section class="franchise-grid" id="franchise-container">
-            </section>
+            <div class="franchise-card" style="border-top-color: var(--status-orange);">
+                <div class="fra-header">
+                    <div class="fra-icon" style="background: var(--status-orange);">BC</div>
+                    <div class="fra-title"><h3>Brasil Cacau</h3></div>
+                </div>
+                <div class="fra-body">
+                    <div class="fra-row"><span class="fra-label">Qtd. Orç.</span><span class="fra-val" id="bc-qtd-orc">0</span></div>
+                    <div class="fra-row"><span class="fra-label">Val. Orç.</span><span class="fra-val" id="bc-val-orc">R$ 0</span></div>
+                    <div class="fra-row"><span class="fra-label">Venda</span><span class="fra-val money" id="bc-val-ped">R$ 0</span></div>
+                    <div class="fra-row"><span class="fra-label">Ticket Méd.</span><span class="fra-val" id="bc-ticket">R$ 0</span></div>
+                    <div class="fra-row divider"><span class="fra-label">Conversão ($)</span><span class="fra-val" id="bc-conversao">0%</span></div>
+                </div>
+            </div>
+
+            <div class="franchise-card" style="border-top-color: #8b4513;">
+                <div class="fra-header">
+                    <div class="fra-icon" style="background: #8b4513;">CS</div>
+                    <div class="fra-title"><h3>Cacau Show</h3></div>
+                </div>
+                <div class="fra-body">
+                    <div class="fra-row"><span class="fra-label">Qtd. Orç.</span><span class="fra-val" id="cs-qtd-orc">0</span></div>
+                    <div class="fra-row"><span class="fra-label">Val. Orç.</span><span class="fra-val" id="cs-val-orc">R$ 0</span></div>
+                    <div class="fra-row"><span class="fra-label">Venda</span><span class="fra-val money" id="cs-val-ped">R$ 0</span></div>
+                    <div class="fra-row"><span class="fra-label">Ticket Méd.</span><span class="fra-val" id="cs-ticket">R$ 0</span></div>
+                    <div class="fra-row divider"><span class="fra-label">Conversão ($)</span><span class="fra-val" id="cs-conversao">0%</span></div>
+                </div>
+            </div>
+
+            <div class="franchise-card" style="border-top-color: #e11d48;">
+                <div class="fra-header">
+                    <div class="fra-icon" style="background: #e11d48;">KP</div>
+                    <div class="fra-title"><h3>Kopenhagen</h3></div>
+                </div>
+                <div class="fra-body">
+                    <div class="fra-row"><span class="fra-label">Qtd. Orç.</span><span class="fra-val" id="kp-qtd-orc">0</span></div>
+                    <div class="fra-row"><span class="fra-label">Val. Orç.</span><span class="fra-val" id="kp-val-orc">R$ 0</span></div>
+                    <div class="fra-row"><span class="fra-label">Venda</span><span class="fra-val money" id="kp-val-ped">R$ 0</span></div>
+                    <div class="fra-row"><span class="fra-label">Ticket Méd.</span><span class="fra-val" id="kp-ticket">R$ 0</span></div>
+                    <div class="fra-row divider"><span class="fra-label">Conversão ($)</span><span class="fra-val" id="kp-conversao">0%</span></div>
+                </div>
+            </div>
+
+            <div class="franchise-card" style="border-top-color: var(--status-blue);">
+                <div class="fra-header">
+                    <div class="fra-icon" style="background: var(--status-blue);">ID</div>
+                    <div class="fra-title"><h3>Industries</h3></div>
+                </div>
+                <div class="fra-body">
+                    <div class="fra-row"><span class="fra-label">Qtd. Orç.</span><span class="fra-val" id="id-qtd-orc">0</span></div>
+                    <div class="fra-row"><span class="fra-label">Val. Orç.</span><span class="fra-val" id="id-val-orc">R$ 0</span></div>
+                    <div class="fra-row"><span class="fra-label">Venda</span><span class="fra-val money" id="id-val-ped">R$ 0</span></div>
+                    <div class="fra-row"><span class="fra-label">Ticket Méd.</span><span class="fra-val" id="id-ticket">R$ 0</span></div>
+                    <div class="fra-row divider"><span class="fra-label">Conversão ($)</span><span class="fra-val" id="id-conversao">0%</span></div>
+                </div>
+            </div>
+
+            <div class="franchise-card" style="border-top-color: #fbbf24;">
+                <div class="fra-header">
+                    <div class="fra-icon" style="background: #fbbf24; color:#000;">PB</div>
+                    <div class="fra-title"><h3>PolyBee</h3></div>
+                </div>
+                <div class="fra-body">
+                    <div class="fra-row"><span class="fra-label">Qtd. Orç.</span><span class="fra-val" id="pb-qtd-orc">0</span></div>
+                    <div class="fra-row"><span class="fra-label">Val. Orç.</span><span class="fra-val" id="pb-val-orc">R$ 0</span></div>
+                    <div class="fra-row"><span class="fra-label">Venda</span><span class="fra-val money" id="pb-val-ped">R$ 0</span></div>
+                    <div class="fra-row"><span class="fra-label">Ticket Méd.</span><span class="fra-val" id="pb-ticket">R$ 0</span></div>
+                    <div class="fra-row divider"><span class="fra-label">Conversão ($)</span><span class="fra-val" id="pb-conversao">0%</span></div>
+                </div>
+            </div>
+        </section>
 
     </div>
 
-    <script src="config.js"></script>
-    <script src="app.js"></script>
+    <script>
+        // === CONFIGURAÇÕES ===
+        const CONFIG = {
+            CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQKstKflONSWvQ6xfVkMdM53mveopLXVGNv9CyQT0kRbjdI7IGIVzvvMPLSXNyQ-xZTQEvDmKr1jI_I/pub?gid=1199309873&single=true&output=csv',
+            META_ANUAL: 9000000,
+            // Trimestres: 15% | 35% | 35% | 15%
+            TRIMESTRES_VALORES: [1350000, 3150000, 3150000, 1350000],
+            TRIMESTRES_LABELS: ['1º Trim', '2º Trim', '3º Trim', '4º Trim']
+        };
+
+        // === MAPEAMENTO COLUNAS (Do seu código original) ===
+        const COLS = {
+            ANO:0, MES:1, LINHA:2,
+            META_MES:3, META_DIARIA:4,
+            QTDE_ORCAMENTOS:6, VALOR_ORCAMENTOS:7, 
+            QTDE_PEDIDOS:13, VALOR_PEDIDOS:14, 
+            PEDIDOS_ATRASADOS:25, PEDIDOS_A_LIBERAR:27,
+            PEDIDOS_EXPEDIDOS_MES:29
+        };
+
+        // === ESTADO GLOBAL ===
+        let allData = [];
+        let gaugeChart = null;
+        let refreshTimer = null;
+        let secondsLeft = 600;
+
+        // === PLUGIN VELOCÍMETRO (Chart.js Needle) ===
+        const gaugeNeedle = {
+            id: 'gaugeNeedle',
+            afterDatasetDraw(chart) {
+                const { ctx, data, chartArea: { top, bottom, left, right, width, height } } = chart;
+                ctx.save();
+                
+                const valorTotal = data.datasets[0].needleValue || 0;
+                const metaTotal = CONFIG.META_ANUAL;
+                let percentage = valorTotal / metaTotal;
+                if (percentage > 1) percentage = 1;
+                if (percentage < 0) percentage = 0;
+
+                const cx = width / 2;
+                // Ajuste de altura para telas grandes/pequenas
+                const cy = height - 10; 
+
+                const angle = Math.PI + (percentage * Math.PI); 
+
+                ctx.translate(cx, top + (height / 1.35)); // Pivot Point
+                ctx.rotate(angle);
+
+                // Desenha Agulha
+                ctx.beginPath();
+                ctx.moveTo(0, -5);
+                ctx.lineTo(height / 1.6, 0); 
+                ctx.lineTo(0, 5);
+                // Cor da agulha inverte no tema light
+                ctx.fillStyle = document.body.classList.contains('light-theme') ? '#333' : '#fff';
+                ctx.fill();
+                
+                // Bolinha central
+                ctx.beginPath();
+                ctx.arc(0, 0, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#6366f1';
+                ctx.fill();
+
+                ctx.restore();
+            }
+        };
+
+        // === INICIALIZAÇÃO ===
+        document.addEventListener('DOMContentLoaded', () => {
+            initFilters();
+            initGauge();
+            loadSettings();
+            fetchSheetData();
+            startTimer();
+        });
+
+        // === BUSCA DE DADOS (CSV) ===
+        async function fetchSheetData() {
+            try {
+                const loading = document.getElementById('loading');
+                if(loading) loading.style.display = 'flex';
+
+                const res = await fetch(`${CONFIG.CSV_URL}&cb=${Date.now()}`);
+                const txt = await res.text();
+                // Parse Manual (Segurança)
+                const rows = csvToArray(txt); 
+                
+                if (rows.length > 1) {
+                    allData = rows.slice(1); // Remove header
+                    updateDashboard();
+                    updateLastUpdate();
+                }
+            } catch (e) {
+                console.error("Erro ao carregar CSV:", e);
+            } finally {
+                const loading = document.getElementById('loading');
+                if(loading) loading.style.display = 'none';
+            }
+        }
+
+        // === LÓGICA PRINCIPAL ===
+        function updateDashboard() {
+            const filters = getCurrentFilters();
+            
+            // 1. Filtra dados do MÊS/ANO selecionados
+            const dadosFiltrados = allData.filter(row => {
+                const rowAno = String(row[COLS.ANO] || '').trim();
+                const rowMes = normalizarMes(row[COLS.MES]);
+                const rowLinha = String(row[COLS.LINHA] || '').trim().toLowerCase();
+                
+                const passaAno = rowAno === filters.ano;
+                const passaMes = rowMes === filters.mes;
+                const passaLinha = filters.linha === 'todas' || rowLinha === filters.linha.toLowerCase();
+
+                return passaAno && passaMes && passaLinha;
+            });
+
+            // 2. Calcula Totais
+            let totalMeta = 0, totalVendas = 0, totalExpedidos = 0;
+            dadosFiltrados.forEach(row => {
+                totalMeta += parseValue(row[COLS.META_MES]);
+                totalVendas += parseValue(row[COLS.VALOR_PEDIDOS]);
+                totalExpedidos += parseValue(row[COLS.PEDIDOS_EXPEDIDOS_MES]);
+            });
+
+            // 3. KPIs Gerais (Ignoram Mês/Ano, respeitam apenas filtro de Linha)
+            const dadosGerais = allData.filter(row => 
+                filters.linha === 'todas' || 
+                String(row[COLS.LINHA]).trim().toLowerCase() === filters.linha.toLowerCase()
+            );
+            const totalAtraso = dadosGerais.reduce((acc, row) => acc + parseValue(row[COLS.PEDIDOS_ATRASADOS]), 0);
+            const totalLiberar = dadosGerais.reduce((acc, row) => acc + parseValue(row[COLS.PEDIDOS_A_LIBERAR]), 0);
+
+            // 4. Meta Diária Cumulativa
+            const diasNoMes = new Date(filters.ano, filters.mes, 0).getDate();
+            const hoje = new Date();
+            const isMesAtual = (parseInt(filters.mes) === (hoje.getMonth() + 1)) && (parseInt(filters.ano) === hoje.getFullYear());
+            
+            // Se for mês atual, considera dia de hoje. Se for passado, considera mês cheio.
+            const diasCorridos = isMesAtual ? hoje.getDate() : diasNoMes;
+            const metaDiaAcumulada = (totalMeta / diasNoMes) * diasCorridos;
+
+            // 5. Atualiza Interface (KPIs)
+            setText('metaMes', formatCurrency(totalMeta));
+            setText('metaDia', formatCurrency(metaDiaAcumulada));
+            setText('valorVendas', formatCurrency(totalVendas));
+            setText('pedidosExpedidos', formatNumber(totalExpedidos));
+            setText('pedidosLiberar', formatNumber(totalLiberar));
+            setText('pedidosAtraso', formatNumber(totalAtraso));
+            setText('mesRef', `${filters.mes}/${filters.ano}`);
+
+            // 6. Atualiza Cards Franquias
+            updateFranquias(allData, filters);
+
+            // 7. Atualiza Velocímetro (Total do ANO Inteiro)
+            updateGauge(filters.ano);
+        }
+
+        function updateFranquias(data, filters) {
+            const ids = [
+                { cod: 'bc', nome: 'FRA - Brasil Cacau' },
+                { cod: 'cs', nome: 'FRA - Cacau Show' },
+                { cod: 'kp', nome: 'FRA - Kopenhagen' },
+                { cod: 'id', nome: 'IND - Industries' },
+                { cod: 'pb', nome: 'PLB - PolyBee' }
+            ];
+
+            ids.forEach(franq => {
+                const fRows = data.filter(r => 
+                    String(r[COLS.ANO]).trim() === filters.ano &&
+                    normalizarMes(r[COLS.MES]) === filters.mes &&
+                    String(r[COLS.LINHA]).trim().toLowerCase() === franq.nome.toLowerCase()
+                );
+
+                let fValOrc = 0, fValPed = 0, fQtdPed = 0, fQtdOrc = 0;
+                fRows.forEach(r => {
+                    fValOrc += parseValue(r[COLS.VALOR_ORCAMENTOS]);
+                    fValPed += parseValue(r[COLS.VALOR_PEDIDOS]);
+                    fQtdPed += parseValue(r[COLS.QTDE_PEDIDOS]);
+                    fQtdOrc += parseValue(r[COLS.QTDE_ORCAMENTOS]);
+                });
+
+                const ticket = fQtdPed > 0 ? fValPed / fQtdPed : 0;
+                // Conversão por VALOR ($ Venda / $ Orçamento)
+                const conversao = fValOrc > 0 ? (fValPed / fValOrc) * 100 : 0;
+
+                setText(`${franq.cod}-qtd-orc`, formatNumber(fQtdOrc));
+                setText(`${franq.cod}-val-orc`, formatCurrency(fValOrc));
+                setText(`${franq.cod}-val-ped`, formatCurrency(fValPed));
+                setText(`${franq.cod}-ticket`, formatCurrency(ticket));
+                setText(`${franq.cod}-conversao`, conversao.toFixed(1) + '%');
+                
+                // Cor dinâmica conversão
+                const elConv = document.getElementById(`${franq.cod}-conversao`);
+                if(elConv) elConv.style.color = conversao >= 30 ? 'var(--status-green)' : 'var(--text-primary)';
+            });
+        }
+
+        function updateGauge(ano) {
+            // Soma vendas de TODO o ano filtrado
+            const dadosAno = allData.filter(r => String(r[COLS.ANO]).trim() === ano);
+            const totalAno = dadosAno.reduce((acc, r) => acc + parseValue(r[COLS.VALOR_PEDIDOS]), 0);
+            
+            if(gaugeChart) {
+                gaugeChart.data.datasets[0].needleValue = totalAno;
+                gaugeChart.update();
+            }
+            setText('gauge-valor-anual', formatCurrency(totalAno));
+            const pct = (totalAno / CONFIG.META_ANUAL) * 100;
+            setText('gauge-percent', pct.toFixed(1) + '%');
+        }
+
+        // === HELPERS ===
+        function csvToArray(text){
+            const lines = text.split(/\r?\n/).filter(l => l.length>0);
+            return lines.map(line => {
+                const out=[]; let cur='', q=false;
+                for (let i=0;i<line.length;i++){
+                    const ch=line[i];
+                    if (ch === '"'){ if (q && line[i+1] === '"'){ cur+='"'; i++; } else { q=!q; } }
+                    else if (ch === ',' && !q){ out.push(cur); cur=''; }
+                    else { cur += ch; }
+                }
+                out.push(cur);
+                return out;
+            });
+        }
+        function parseValue(v){
+            if (!v && v!==0) return 0;
+            if (typeof v==='number') return v;
+            let s = String(v).replace('R$','').replace(/\./g,'').replace(',','.').trim();
+            return parseFloat(s)||0;
+        }
+        function formatCurrency(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0); }
+        function formatNumber(v){ return new Intl.NumberFormat('pt-BR').format(v||0); }
+        function setText(id, txt){ const el = document.getElementById(id); if(el) el.textContent = txt; }
+        function normalizarMes(m){ const n=parseInt(m,10); return isNaN(n)?'01':String(n).padStart(2,'0'); }
+
+        // === CONTROLES (Filtro, Timer, Tema) ===
+        function getCurrentFilters(){
+            return {
+                ano: document.getElementById('filterAno').value,
+                mes: document.getElementById('filterMes').value,
+                linha: document.getElementById('filterLinha').value
+            };
+        }
+        function initFilters(){
+            const selAno = document.getElementById('filterAno');
+            const selMes = document.getElementById('filterMes');
+            
+            [2024, 2025, 2026].forEach(a => {
+                let opt = new Option(a, a);
+                if(a === new Date().getFullYear()) opt.selected = true;
+                selAno.add(opt);
+            });
+            
+            const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+            nomes.forEach((n,i) => {
+                let val = String(i+1).padStart(2,'0');
+                let opt = new Option(n, val);
+                if((i+1) === (new Date().getMonth() + 1)) opt.selected = true;
+                selMes.add(opt);
+            });
+        }
+        function toggleFilterMenu(){ document.getElementById('filter-menu').classList.toggle('active'); }
+        function applyFilters(){ updateDashboard(); toggleFilterMenu(); }
+
+        // Inicializa Velocímetro
+        function initGauge(){
+            const ctx = document.getElementById('gaugeChart').getContext('2d');
+            gaugeChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: CONFIG.TRIMESTRES_LABELS,
+                    datasets: [{
+                        data: CONFIG.TRIMESTRES_VALORES,
+                        backgroundColor: ['#334155', '#475569', '#64748b', '#94a3b8'],
+                        borderWidth: 2,
+                        borderColor: '#1a1640', // Cor do fundo para separar
+                        cutout: '75%',
+                        circumference: 180,
+                        rotation: -90,
+                        needleValue: 0
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    layout: { padding: { bottom: 0 } },
+                    plugins: { legend: {display:false}, tooltip: {enabled:false} }
+                },
+                plugins: [gaugeNeedle]
+            });
+        }
+
+        // Timer e Preferences
+        function loadSettings(){
+            const savedTime = localStorage.getItem('dash_refresh_sec');
+            if(savedTime) {
+                secondsLeft = parseInt(savedTime);
+                document.getElementById('refreshSelect').value = savedTime;
+            }
+            
+            const savedTheme = localStorage.getItem('dash_theme');
+            if(savedTheme === 'light') toggleTheme(true);
+        }
+
+        function updateRefreshTime(){
+            const val = document.getElementById('refreshSelect').value;
+            secondsLeft = parseInt(val);
+            localStorage.setItem('dash_refresh_sec', val);
+            startTimer();
+        }
+
+        function startTimer(){
+            clearInterval(refreshTimer);
+            const display = document.getElementById('countdown');
+            const total = parseInt(document.getElementById('refreshSelect').value);
+            let count = total;
+            
+            refreshTimer = setInterval(() => {
+                count--;
+                let m = Math.floor(count/60);
+                let s = count%60;
+                display.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                if(count<=0){
+                    fetchSheetData();
+                    count = total;
+                }
+            }, 1000);
+        }
+
+        function updateLastUpdate(){ 
+            document.getElementById('last-update').textContent = `Atualizado: ${new Date().toLocaleTimeString()}`; 
+        }
+
+        function toggleTheme(forceLight = false){
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            const isLight = forceLight || !body.classList.contains('light-theme');
+            
+            if(isLight) {
+                body.classList.add('light-theme');
+                icon.classList.replace('ph-moon', 'ph-sun');
+                localStorage.setItem('dash_theme', 'light');
+            } else {
+                body.classList.remove('light-theme');
+                icon.classList.replace('ph-sun', 'ph-moon');
+                localStorage.setItem('dash_theme', 'dark');
+            }
+            // Atualiza cor da agulha se gráfico existir
+            if(gaugeChart) gaugeChart.update();
+        }
+    </script>
 </body>
 </html>
