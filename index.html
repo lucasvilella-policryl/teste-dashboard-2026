@@ -11,17 +11,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
 
     <style>
-        /* === VARIÁVEIS DE TEMA (DARK/LIGHT) === */
+        /* === VARIÁVEIS DE TEMA === */
         :root {
-            /* Padrão DARK */
-            --bg-app: #0f0c29;
-            --bg-header: #1a1640;
-            --bg-card: #201c4e;
-            --bg-card-border: #363275;
+            /* Padrão DARK (Ajustado para o tom do seu print) */
+            --bg-app: #12122b;       /* Fundo bem escuro */
+            --bg-header: #1a1640;    /* Header Roxo Escuro */
+            --bg-card: #201c4e;      /* Cards Roxo/Azul */
+            --bg-card-border: #363275; /* Bordas sutis */
             
             --text-primary: #ffffff;
-            --text-secondary: #94a3b8;
-            --accent: #6366f1; /* Indigo */
+            --text-secondary: #a5b4fc; /* Um lilás claro para textos secundários */
+            --accent: #6366f1; 
             
             --status-blue: #3b82f6;
             --status-orange: #f97316;
@@ -30,16 +30,15 @@
             
             --font-main: 'Inter', sans-serif;
             --radius: 16px;
-            --shadow: 0 4px 20px rgba(0,0,0,0.3);
+            --shadow: 0 8px 24px rgba(0,0,0,0.4);
         }
 
-        /* Tema LIGHT (Ativado via JS) */
+        /* Tema LIGHT */
         body.light-theme {
             --bg-app: #f1f5f9;
             --bg-header: #ffffff;
             --bg-card: #ffffff;
             --bg-card-border: #cbd5e1;
-            
             --text-primary: #1e293b;
             --text-secondary: #64748b;
             --shadow: 0 4px 15px rgba(0,0,0,0.05);
@@ -54,26 +53,26 @@
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
-            transition: background 0.3s ease, color 0.3s ease;
+            transition: background 0.3s ease;
         }
 
         .dashboard-wrapper {
-            padding: 1.5vh 1.5vw;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 25px; /* Mais espaço entre as linhas */
             height: 100vh;
         }
 
-        /* === HEADER === */
+        /* === HEADER (Ajustado altura para o Gauge) === */
         .top-bar {
             background: var(--bg-header);
             border-radius: var(--radius);
             border: 1px solid var(--bg-card-border);
             padding: 0 30px;
-            height: 170px; /* Altura fixa para acomodar o gauge */
+            height: 200px; /* Aumentei para caber o velocímetro confortavelmente */
             display: grid;
-            grid-template-columns: 25% 50% 25%; /* Logo - Gauge - Controles */
+            grid-template-columns: 25% 50% 25%;
             align-items: center;
             position: relative;
             box-shadow: var(--shadow);
@@ -81,37 +80,43 @@
 
         /* Logo Area */
         .brand-area { display: flex; align-items: center; gap: 20px; }
-        .logo { height: 55px; width: auto; }
-        .brand-text h1 { font-size: 1.1rem; font-weight: 800; letter-spacing: 1px; }
-        .brand-text span { font-size: 0.8rem; color: var(--text-secondary); display: block; margin-top: 4px; }
+        .logo { height: 60px; width: auto; object-fit: contain; }
+        .brand-text h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: 1px; line-height: 1; }
+        .brand-text span { font-size: 0.8rem; color: var(--text-secondary); display: block; margin-top: 5px; }
 
-        /* Gauge (Velocímetro) Area */
+        /* Gauge Area (CORRIGIDO POSICIONAMENTO) */
         .gauge-container {
             position: relative;
             height: 100%;
             width: 100%;
             display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            padding-bottom: 5px;
+            flex-direction: column;
+            justify-content: flex-end; /* Joga o gráfico para baixo */
+            align-items: center;
+            padding-bottom: 15px;
         }
+        
+        /* Canvas wrapper para controlar tamanho */
+        .canvas-wrapper {
+            position: relative;
+            height: 140px; /* Altura fixa para o gráfico */
+            width: 280px;  /* Largura fixa proporcional */
+        }
+
         .gauge-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0; right: 0;
+            margin-top: -30px; /* Sobe o texto para perto do arco */
             text-align: center;
             z-index: 10;
-            pointer-events: none; /* Deixa clicar no gráfico se precisar */
         }
         .gauge-value {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 900;
             color: var(--text-primary);
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
             display: block;
             line-height: 1.2;
         }
-        .gauge-label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+        .gauge-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
 
         /* Controles Area */
         .controls-area {
@@ -119,11 +124,12 @@
             justify-content: flex-end;
             align-items: center;
             gap: 15px;
+            height: 100%;
         }
 
         /* Botão Tema */
         .btn-icon {
-            background: rgba(128, 128, 128, 0.1);
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--bg-card-border);
             color: var(--text-primary);
             width: 42px; height: 42px;
@@ -135,23 +141,35 @@
         }
         .btn-icon:hover { background: var(--accent); color: white; border-color: var(--accent); }
 
-        /* Timer */
-        .timer-control {
-            text-align: right;
-            display: flex; flex-direction: column; align-items: flex-end;
+        /* Timer e Filtros alinhados verticalmente */
+        .controls-column {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 15px;
         }
-        .timer-row { display: flex; gap: 8px; align-items: baseline; }
-        .timer-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
-        .timer-display { font-family: 'Courier New', monospace; font-size: 1.2rem; font-weight: 700; color: var(--accent); }
-        .timer-settings select {
-            background: transparent; border: none; color: var(--text-secondary);
-            font-size: 0.75rem; cursor: pointer; text-align: right; margin-top: 2px;
-            font-family: var(--font-main);
-        }
-        .timer-settings select:focus { outline: none; color: var(--accent); }
 
-        /* Filtro Dropdown */
-        .filter-wrapper { position: relative; }
+        .timer-display {
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-align: right;
+        }
+        
+        /* Selects Bonitos */
+        select.custom-select {
+            background: var(--bg-app);
+            border: 1px solid var(--bg-card-border);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: var(--font-main);
+            font-size: 0.85rem;
+            cursor: pointer;
+            outline: none;
+        }
+        select.custom-select:hover { border-color: var(--accent); }
+
         .btn-filter {
             background: var(--bg-card);
             border: 1px solid var(--accent);
@@ -160,124 +178,115 @@
             border-radius: 8px;
             font-weight: 600; cursor: pointer;
             display: flex; align-items: center; gap: 8px;
-            transition: all 0.2s;
             font-family: var(--font-main);
+            font-size: 0.9rem;
         }
         .btn-filter:hover { background: var(--accent); color: white; }
 
+        /* Menu Filtro */
+        .filter-wrapper { position: relative; }
         .filter-dropdown {
             position: absolute;
-            top: 120%; right: 0;
+            top: 130%; right: 0;
             background: var(--bg-header);
             border: 1px solid var(--bg-card-border);
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             width: 280px;
-            display: none; /* Escondido por padrão */
+            display: none;
             z-index: 100;
             flex-direction: column; gap: 15px;
         }
         .filter-dropdown.active { display: flex; }
-
         .filter-group label { display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 5px; font-weight: 600; }
-        .filter-group select {
-            width: 100%; padding: 10px;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--bg-card-border);
-            color: var(--text-primary);
-            border-radius: 6px;
-            font-family: var(--font-main);
-        }
-        body.light-theme .filter-group select { background: #f1f5f9; }
-
         .btn-apply {
             background: var(--accent); border: none; padding: 12px;
             color: white; font-weight: bold; border-radius: 6px; cursor: pointer;
-            width: 100%; transition: opacity 0.2s;
+            width: 100%;
         }
-        .btn-apply:hover { opacity: 0.9; }
 
         /* === KPIS ROW === */
         .kpi-row {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 1.2vw;
+            gap: 1.5vw;
         }
 
         .card {
             background: var(--bg-card);
             border: 1px solid var(--bg-card-border);
             border-radius: var(--radius);
-            padding: 20px 15px;
+            padding: 24px 20px;
             display: flex; flex-direction: column; justify-content: center;
             box-shadow: var(--shadow);
             position: relative;
             overflow: hidden;
-            min-height: 140px;
+            min-height: 150px;
         }
 
-        .card-label { font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
-        .kpi-main h2 { font-size: 1.6rem; font-weight: 800; margin: 5px 0; color: var(--text-primary); }
+        .card-label { font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .kpi-main h2 { font-size: 1.8rem; font-weight: 800; margin: 0; color: var(--text-primary); letter-spacing: -0.5px; }
         .kpi-main.highlight h2 { color: var(--status-green); }
-        .card-sub { font-size: 0.75rem; color: var(--text-secondary); opacity: 0.8; }
+        .card-sub { font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px; opacity: 0.8; }
 
-        /* Cards Coloridos (Status) */
-        .kpi-status { border-top-width: 4px; border-top-style: solid; justify-content: space-between; }
-        .kpi-status h2 { font-size: 2.2rem; font-weight: 800; line-height: 1; margin: 10px 0; }
+        /* Cards Coloridos */
+        .kpi-status { border-top: 5px solid; justify-content: space-between; }
+        .kpi-status h2 { font-size: 2.5rem; font-weight: 800; line-height: 1; margin: 10px 0; }
         
         .status-blue { border-top-color: var(--status-blue); }
         .status-orange { border-top-color: var(--status-orange); }
         .status-green { border-top-color: var(--status-green); }
-        .status-red { border-top-color: var(--status-red); }
 
         /* === GRID FRANQUIAS === */
         .franchise-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 1.2vw;
-            flex: 1; /* Ocupa o resto da tela */
-            min-height: 0; /* Fix para scroll interno se precisar */
+            gap: 1.5vw;
+            flex: 1; 
         }
 
         .franchise-card {
             background: var(--bg-card);
             border: 1px solid var(--bg-card-border);
             border-radius: var(--radius);
-            padding: 15px;
+            padding: 20px;
             display: flex; flex-direction: column; justify-content: space-between;
             box-shadow: var(--shadow);
-            border-top-width: 4px; border-top-style: solid;
+            border-top: 4px solid; /* A cor vem do inline style no JS */
         }
 
         .fra-header {
-            display: flex; align-items: center; gap: 10px;
-            padding-bottom: 12px; border-bottom: 1px solid var(--bg-card-border);
-            margin-bottom: 10px;
+            display: flex; align-items: center; gap: 12px;
+            padding-bottom: 15px; border-bottom: 1px solid var(--bg-card-border);
+            margin-bottom: 15px;
         }
-        .fra-icon {
-            width: 36px; height: 36px; border-radius: 8px;
+        /* Caixa do ícone agora é vazada (outline) como no print */
+        .fra-icon-box {
+            width: 40px; height: 40px; border-radius: 8px;
+            border: 2px solid; /* Cor via style */
             display: flex; align-items: center; justify-content: center;
-            font-weight: 800; color: #fff; font-size: 0.8rem;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            background: transparent;
         }
-        .fra-title h3 { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
 
-        .fra-body { display: flex; flex-direction: column; gap: 8px; }
+        .fra-title h3 { font-size: 1rem; font-weight: 700; color: var(--text-primary); text-transform: uppercase; }
+        .fra-title span { font-size: 0.75rem; color: var(--text-secondary); display: block; }
+
+        .fra-body { display: flex; flex-direction: column; gap: 10px; }
         .fra-row { display: flex; justify-content: space-between; align-items: baseline; }
         .fra-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
-        .fra-val { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+        .fra-val { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
         .fra-val.money { color: var(--status-green); font-weight: 700; font-size: 1.1rem; }
         
         .fra-row.divider {
-            border-top: 1px dashed var(--bg-card-border);
-            padding-top: 8px; margin-top: 4px;
+            border-top: 1px solid var(--bg-card-border);
+            padding-top: 10px; margin-top: 5px;
         }
 
-        /* === LOADING OVERLAY === */
+        /* === LOADING === */
         .loading {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 12, 41, 0.95);
+            background: #0f0c29;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             z-index: 9999;
         }
@@ -289,19 +298,20 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-text { margin-top: 15px; color: var(--accent); font-weight: 600; }
+        .loading-text { margin-top: 15px; color: var(--accent); font-weight: 600; font-family: var(--font-main); }
 
-        /* === MEDIA QUERIES (TV 4K) === */
+        /* === RESPONSIVIDADE TV 4K === */
         @media (min-width: 1920px) {
-            html { font-size: 20px; } /* Aumenta escala geral */
-            .kpi-row { gap: 20px; }
-            .franchise-grid { gap: 20px; }
+            html { font-size: 20px; } 
+            .dashboard-wrapper { padding: 30px; gap: 30px; }
+            .top-bar { height: 220px; }
+            .canvas-wrapper { width: 320px; height: 160px; }
         }
-
+        
         @media (max-width: 1366px) {
             html { font-size: 14px; }
             .kpi-row { grid-template-columns: repeat(3, 1fr); gap: 15px; }
-            .franchise-grid { overflow-y: auto; padding-bottom: 20px; }
+            .franchise-grid { overflow-y: auto; }
         }
     </style>
 </head>
@@ -309,7 +319,7 @@
 
     <div class="loading" id="loading">
         <div class="spinner"></div>
-        <div class="loading-text">Atualizando Dashboard...</div>
+        <div class="loading-text">Carregando Dashboard...</div>
     </div>
 
     <div class="dashboard-wrapper">
@@ -324,7 +334,9 @@
             </div>
 
             <div class="gauge-container">
-                <canvas id="gaugeChart"></canvas>
+                <div class="canvas-wrapper">
+                    <canvas id="gaugeChart"></canvas>
+                </div>
                 <div class="gauge-overlay">
                     <span class="gauge-value" id="gauge-valor-anual">R$ 0,00</span>
                     <span class="gauge-label">Meta Anual (<span id="gauge-percent">0%</span>)</span>
@@ -332,53 +344,56 @@
             </div>
 
             <div class="controls-area">
+                
                 <button class="btn-icon" onclick="toggleTheme()" title="Alternar Tema">
                     <i class="ph ph-moon" id="theme-icon"></i>
                 </button>
 
-                <div class="timer-control">
-                    <div class="timer-row">
-                        <span class="timer-label">Refresh:</span>
-                        <span class="timer-display" id="countdown">00:00</span>
+                <div class="controls-column">
+                    <div class="filter-wrapper">
+                        <button class="btn-filter" onclick="toggleFilterMenu()">
+                            FILTRAR <i class="ph ph-caret-down"></i>
+                        </button>
+                        
+                        <div class="filter-dropdown" id="filter-menu">
+                            <div class="filter-group">
+                                <label>ANO</label>
+                                <select id="filterAno" class="custom-select" style="width:100%"></select>
+                            </div>
+                            <div class="filter-group">
+                                <label>MÊS</label>
+                                <select id="filterMes" class="custom-select" style="width:100%"></select>
+                            </div>
+                            <div class="filter-group">
+                                <label>LINHA / FRANQUIA</label>
+                                <select id="filterLinha" class="custom-select" style="width:100%">
+                                    <option value="todas">Todas as Linhas</option>
+                                    <option value="FRA - Brasil Cacau">Brasil Cacau</option>
+                                    <option value="FRA - Cacau Show">Cacau Show</option>
+                                    <option value="FRA - Kopenhagen">Kopenhagen</option>
+                                    <option value="IND - Industries">Industries</option>
+                                    <option value="PLB - PolyBee">PolyBee</option>
+                                    <option value="SKD - Skullderia">Skullderia</option>
+                                </select>
+                            </div>
+                            <button class="btn-apply" onclick="applyFilters()">Aplicar Filtros</button>
+                        </div>
                     </div>
-                    <div class="timer-settings">
-                        <select id="refreshSelect" onchange="updateRefreshTime()">
-                            <option value="30">30 seg (Teste)</option>
+
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span class="timer-display" id="countdown">--:--</span>
+                        <select id="refreshSelect" class="custom-select" onchange="updateRefreshTime()">
+                            <option value="30">30 seg</option>
+                            <option value="60">1 min</option>
+                            <option value="120">2 min</option>
                             <option value="300">5 min</option>
                             <option value="600" selected>10 min</option>
+                            <option value="900">15 min</option>
+                            <option value="1800">30 min</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="filter-wrapper">
-                    <button class="btn-filter" onclick="toggleFilterMenu()">
-                        FILTRAR <i class="ph ph-caret-down"></i>
-                    </button>
-                    
-                    <div class="filter-dropdown" id="filter-menu">
-                        <div class="filter-group">
-                            <label>ANO</label>
-                            <select id="filterAno"></select>
-                        </div>
-                        <div class="filter-group">
-                            <label>MÊS</label>
-                            <select id="filterMes"></select>
-                        </div>
-                        <div class="filter-group">
-                            <label>LINHA / FRANQUIA</label>
-                            <select id="filterLinha">
-                                <option value="todas">Todas as Linhas</option>
-                                <option value="FRA - Brasil Cacau">Brasil Cacau</option>
-                                <option value="FRA - Cacau Show">Cacau Show</option>
-                                <option value="FRA - Kopenhagen">Kopenhagen</option>
-                                <option value="IND - Industries">Industries</option>
-                                <option value="PLB - PolyBee">PolyBee</option>
-                                <option value="SKD - Skullderia">Skullderia</option>
-                            </select>
-                        </div>
-                        <button class="btn-apply" onclick="applyFilters()">Aplicar Filtros</button>
-                    </div>
-                </div>
             </div>
         </header>
 
@@ -402,125 +417,59 @@
             </div>
 
             <div class="card kpi-status status-blue">
-                <span class="card-label">PEDIDOS EXPEDIDOS</span>
-                <h2 id="pedidosExpedidos">0</h2>
-                <span class="card-sub">Entregues no mês</span>
+                <span class="card-label">PEDIDOS EM CASA</span>
+                <h2 id="pedidosEmCasa">0</h2>
+                <span class="card-sub">Aprovados</span>
             </div>
 
             <div class="card kpi-status status-orange">
                 <span class="card-label">PEDIDOS À LIBERAR</span>
                 <h2 id="pedidosLiberar">0</h2>
-                <span class="card-sub">Aguardando aprovação</span>
+                <span class="card-sub">Atenção Necessária</span>
             </div>
 
-            <div class="card kpi-status status-red">
-                <span class="card-label">PEDIDOS EM ATRASO</span>
-                <h2 id="pedidosAtraso">0</h2>
-                <span class="card-sub">Atenção Necessária</span>
+            <div class="card kpi-status status-green">
+                <span class="card-label">PEDIDOS FATURADOS</span>
+                <h2 id="pedidosFaturados">0</h2>
+                <span class="card-sub">Na expedição/Expedidos</span>
             </div>
         </section>
 
         <section class="franchise-grid" id="franchise-container">
-            <div class="franchise-card" style="border-top-color: var(--status-orange);">
-                <div class="fra-header">
-                    <div class="fra-icon" style="background: var(--status-orange);">BC</div>
-                    <div class="fra-title"><h3>Brasil Cacau</h3></div>
-                </div>
-                <div class="fra-body">
-                    <div class="fra-row"><span class="fra-label">Qtd. Orç.</span><span class="fra-val" id="bc-qtd-orc">0</span></div>
-                    <div class="fra-row"><span class="fra-label">Val. Orç.</span><span class="fra-val" id="bc-val-orc">R$ 0</span></div>
-                    <div class="fra-row"><span class="fra-label">Venda</span><span class="fra-val money" id="bc-val-ped">R$ 0</span></div>
-                    <div class="fra-row"><span class="fra-label">Ticket Méd.</span><span class="fra-val" id="bc-ticket">R$ 0</span></div>
-                    <div class="fra-row divider"><span class="fra-label">Conversão ($)</span><span class="fra-val" id="bc-conversao">0%</span></div>
-                </div>
-            </div>
-
-            <div class="franchise-card" style="border-top-color: #8b4513;">
-                <div class="fra-header">
-                    <div class="fra-icon" style="background: #8b4513;">CS</div>
-                    <div class="fra-title"><h3>Cacau Show</h3></div>
-                </div>
-                <div class="fra-body">
-                    <div class="fra-row"><span class="fra-label">Qtd. Orç.</span><span class="fra-val" id="cs-qtd-orc">0</span></div>
-                    <div class="fra-row"><span class="fra-label">Val. Orç.</span><span class="fra-val" id="cs-val-orc">R$ 0</span></div>
-                    <div class="fra-row"><span class="fra-label">Venda</span><span class="fra-val money" id="cs-val-ped">R$ 0</span></div>
-                    <div class="fra-row"><span class="fra-label">Ticket Méd.</span><span class="fra-val" id="cs-ticket">R$ 0</span></div>
-                    <div class="fra-row divider"><span class="fra-label">Conversão ($)</span><span class="fra-val" id="cs-conversao">0%</span></div>
-                </div>
-            </div>
-
-            <div class="franchise-card" style="border-top-color: #e11d48;">
-                <div class="fra-header">
-                    <div class="fra-icon" style="background: #e11d48;">KP</div>
-                    <div class="fra-title"><h3>Kopenhagen</h3></div>
-                </div>
-                <div class="fra-body">
-                    <div class="fra-row"><span class="fra-label">Qtd. Orç.</span><span class="fra-val" id="kp-qtd-orc">0</span></div>
-                    <div class="fra-row"><span class="fra-label">Val. Orç.</span><span class="fra-val" id="kp-val-orc">R$ 0</span></div>
-                    <div class="fra-row"><span class="fra-label">Venda</span><span class="fra-val money" id="kp-val-ped">R$ 0</span></div>
-                    <div class="fra-row"><span class="fra-label">Ticket Méd.</span><span class="fra-val" id="kp-ticket">R$ 0</span></div>
-                    <div class="fra-row divider"><span class="fra-label">Conversão ($)</span><span class="fra-val" id="kp-conversao">0%</span></div>
-                </div>
-            </div>
-
-            <div class="franchise-card" style="border-top-color: var(--status-blue);">
-                <div class="fra-header">
-                    <div class="fra-icon" style="background: var(--status-blue);">ID</div>
-                    <div class="fra-title"><h3>Industries</h3></div>
-                </div>
-                <div class="fra-body">
-                    <div class="fra-row"><span class="fra-label">Qtd. Orç.</span><span class="fra-val" id="id-qtd-orc">0</span></div>
-                    <div class="fra-row"><span class="fra-label">Val. Orç.</span><span class="fra-val" id="id-val-orc">R$ 0</span></div>
-                    <div class="fra-row"><span class="fra-label">Venda</span><span class="fra-val money" id="id-val-ped">R$ 0</span></div>
-                    <div class="fra-row"><span class="fra-label">Ticket Méd.</span><span class="fra-val" id="id-ticket">R$ 0</span></div>
-                    <div class="fra-row divider"><span class="fra-label">Conversão ($)</span><span class="fra-val" id="id-conversao">0%</span></div>
-                </div>
-            </div>
-
-            <div class="franchise-card" style="border-top-color: #fbbf24;">
-                <div class="fra-header">
-                    <div class="fra-icon" style="background: #fbbf24; color:#000;">PB</div>
-                    <div class="fra-title"><h3>PolyBee</h3></div>
-                </div>
-                <div class="fra-body">
-                    <div class="fra-row"><span class="fra-label">Qtd. Orç.</span><span class="fra-val" id="pb-qtd-orc">0</span></div>
-                    <div class="fra-row"><span class="fra-label">Val. Orç.</span><span class="fra-val" id="pb-val-orc">R$ 0</span></div>
-                    <div class="fra-row"><span class="fra-label">Venda</span><span class="fra-val money" id="pb-val-ped">R$ 0</span></div>
-                    <div class="fra-row"><span class="fra-label">Ticket Méd.</span><span class="fra-val" id="pb-ticket">R$ 0</span></div>
-                    <div class="fra-row divider"><span class="fra-label">Conversão ($)</span><span class="fra-val" id="pb-conversao">0%</span></div>
-                </div>
-            </div>
-        </section>
+            </section>
 
     </div>
 
     <script>
-        // === CONFIGURAÇÕES ===
+        // === 1. CONFIGURAÇÕES ===
         const CONFIG = {
             CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQKstKflONSWvQ6xfVkMdM53mveopLXVGNv9CyQT0kRbjdI7IGIVzvvMPLSXNyQ-xZTQEvDmKr1jI_I/pub?gid=1199309873&single=true&output=csv',
-            META_ANUAL: 9000000,
-            // Trimestres: 15% | 35% | 35% | 15%
-            TRIMESTRES_VALORES: [1350000, 3150000, 3150000, 1350000],
-            TRIMESTRES_LABELS: ['1º Trim', '2º Trim', '3º Trim', '4º Trim']
+            
+            // Defina aqui as metas para cada ano (Isso alimenta o velocímetro)
+            METAS_ANUAIS: {
+                2024: 8500000,
+                2025: 9000000,
+                2026: 10000000
+            }
         };
 
-        // === MAPEAMENTO COLUNAS (Do seu código original) ===
+        // === 2. MAPEAMENTO DAS COLUNAS ===
         const COLS = {
             ANO:0, MES:1, LINHA:2,
             META_MES:3, META_DIARIA:4,
             QTDE_ORCAMENTOS:6, VALOR_ORCAMENTOS:7, 
             QTDE_PEDIDOS:13, VALOR_PEDIDOS:14, 
             PEDIDOS_ATRASADOS:25, PEDIDOS_A_LIBERAR:27,
-            PEDIDOS_EXPEDIDOS_MES:29
+            PEDIDOS_FATURADOS_MES:28, PEDIDOS_EM_CASA: 26 // Ajuste se a coluna for outra
         };
 
-        // === ESTADO GLOBAL ===
+        // === 3. ESTADO GLOBAL ===
         let allData = [];
         let gaugeChart = null;
         let refreshTimer = null;
         let secondsLeft = 600;
 
-        // === PLUGIN VELOCÍMETRO (Chart.js Needle) ===
+        // === 4. PLUGIN VELOCÍMETRO (Agulha) ===
         const gaugeNeedle = {
             id: 'gaugeNeedle',
             afterDatasetDraw(chart) {
@@ -528,32 +477,31 @@
                 ctx.save();
                 
                 const valorTotal = data.datasets[0].needleValue || 0;
-                const metaTotal = CONFIG.META_ANUAL;
+                const metaTotal = data.datasets[0].metaTotal || 1;
+                
                 let percentage = valorTotal / metaTotal;
                 if (percentage > 1) percentage = 1;
                 if (percentage < 0) percentage = 0;
 
                 const cx = width / 2;
-                // Ajuste de altura para telas grandes/pequenas
-                const cy = height - 10; 
+                const cy = height - 5; // Base do arco
 
                 const angle = Math.PI + (percentage * Math.PI); 
 
-                ctx.translate(cx, top + (height / 1.35)); // Pivot Point
+                ctx.translate(cx, top + (height / 1.35)); // Ponto de pivô
                 ctx.rotate(angle);
 
-                // Desenha Agulha
+                // Desenha a Agulha
                 ctx.beginPath();
-                ctx.moveTo(0, -5);
+                ctx.moveTo(0, -4);
                 ctx.lineTo(height / 1.6, 0); 
-                ctx.lineTo(0, 5);
-                // Cor da agulha inverte no tema light
+                ctx.lineTo(0, 4);
                 ctx.fillStyle = document.body.classList.contains('light-theme') ? '#333' : '#fff';
                 ctx.fill();
                 
-                // Bolinha central
+                // Base da agulha
                 ctx.beginPath();
-                ctx.arc(0, 0, 8, 0, Math.PI * 2);
+                ctx.arc(0, 0, 6, 0, Math.PI * 2);
                 ctx.fillStyle = '#6366f1';
                 ctx.fill();
 
@@ -561,7 +509,7 @@
             }
         };
 
-        // === INICIALIZAÇÃO ===
+        // === 5. INICIALIZAÇÃO ===
         document.addEventListener('DOMContentLoaded', () => {
             initFilters();
             initGauge();
@@ -570,7 +518,7 @@
             startTimer();
         });
 
-        // === BUSCA DE DADOS (CSV) ===
+        // === 6. FETCH DADOS ===
         async function fetchSheetData() {
             try {
                 const loading = document.getElementById('loading');
@@ -578,11 +526,10 @@
 
                 const res = await fetch(`${CONFIG.CSV_URL}&cb=${Date.now()}`);
                 const txt = await res.text();
-                // Parse Manual (Segurança)
                 const rows = csvToArray(txt); 
                 
                 if (rows.length > 1) {
-                    allData = rows.slice(1); // Remove header
+                    allData = rows.slice(1);
                     updateDashboard();
                     updateLastUpdate();
                 }
@@ -594,11 +541,11 @@
             }
         }
 
-        // === LÓGICA PRINCIPAL ===
+        // === 7. LÓGICA PRINCIPAL DE ATUALIZAÇÃO ===
         function updateDashboard() {
             const filters = getCurrentFilters();
             
-            // 1. Filtra dados do MÊS/ANO selecionados
+            // FILTRO
             const dadosFiltrados = allData.filter(row => {
                 const rowAno = String(row[COLS.ANO] || '').trim();
                 const rowMes = normalizarMes(row[COLS.MES]);
@@ -611,15 +558,17 @@
                 return passaAno && passaMes && passaLinha;
             });
 
-            // 2. Calcula Totais
-            let totalMeta = 0, totalVendas = 0, totalExpedidos = 0;
+            // SOMAS KPI
+            let totalMeta = 0, totalVendas = 0, totalFaturados = 0, totalEmCasa = 0;
             dadosFiltrados.forEach(row => {
                 totalMeta += parseValue(row[COLS.META_MES]);
                 totalVendas += parseValue(row[COLS.VALOR_PEDIDOS]);
-                totalExpedidos += parseValue(row[COLS.PEDIDOS_EXPEDIDOS_MES]);
+                totalFaturados += parseValue(row[COLS.PEDIDOS_FATURADOS_MES]);
+                // Se não tiver coluna exata para "em casa", usando placeholder
+                // totalEmCasa += parseValue(row[COLS.PEDIDOS_EM_CASA]); 
             });
 
-            // 3. KPIs Gerais (Ignoram Mês/Ano, respeitam apenas filtro de Linha)
+            // KPIs GERAIS (Independente de mês)
             const dadosGerais = allData.filter(row => 
                 filters.linha === 'todas' || 
                 String(row[COLS.LINHA]).trim().toLowerCase() === filters.linha.toLowerCase()
@@ -627,38 +576,43 @@
             const totalAtraso = dadosGerais.reduce((acc, row) => acc + parseValue(row[COLS.PEDIDOS_ATRASADOS]), 0);
             const totalLiberar = dadosGerais.reduce((acc, row) => acc + parseValue(row[COLS.PEDIDOS_A_LIBERAR]), 0);
 
-            // 4. Meta Diária Cumulativa
+            // META DIÁRIA CUMULATIVA
             const diasNoMes = new Date(filters.ano, filters.mes, 0).getDate();
             const hoje = new Date();
             const isMesAtual = (parseInt(filters.mes) === (hoje.getMonth() + 1)) && (parseInt(filters.ano) === hoje.getFullYear());
-            
-            // Se for mês atual, considera dia de hoje. Se for passado, considera mês cheio.
             const diasCorridos = isMesAtual ? hoje.getDate() : diasNoMes;
             const metaDiaAcumulada = (totalMeta / diasNoMes) * diasCorridos;
 
-            // 5. Atualiza Interface (KPIs)
+            // ATUALIZA HTML
             setText('metaMes', formatCurrency(totalMeta));
             setText('metaDia', formatCurrency(metaDiaAcumulada));
             setText('valorVendas', formatCurrency(totalVendas));
-            setText('pedidosExpedidos', formatNumber(totalExpedidos));
+            
+            setText('pedidosFaturados', formatNumber(totalFaturados));
             setText('pedidosLiberar', formatNumber(totalLiberar));
-            setText('pedidosAtraso', formatNumber(totalAtraso));
+            
+            // Usando Faturados como Em Casa temporariamente se não tiver a coluna, senão use totalEmCasa
+            setText('pedidosEmCasa', formatNumber(totalEmCasa)); 
+            
             setText('mesRef', `${filters.mes}/${filters.ano}`);
 
-            // 6. Atualiza Cards Franquias
+            // RENDERIZA FRANQUIAS
             updateFranquias(allData, filters);
 
-            // 7. Atualiza Velocímetro (Total do ANO Inteiro)
+            // ATUALIZA VELOCÍMETRO (Meta Anual Dinâmica)
             updateGauge(filters.ano);
         }
 
         function updateFranquias(data, filters) {
+            const container = document.getElementById('franchise-container');
+            container.innerHTML = ''; // Limpa
+
             const ids = [
-                { cod: 'bc', nome: 'FRA - Brasil Cacau' },
-                { cod: 'cs', nome: 'FRA - Cacau Show' },
-                { cod: 'kp', nome: 'FRA - Kopenhagen' },
-                { cod: 'id', nome: 'IND - Industries' },
-                { cod: 'pb', nome: 'PLB - PolyBee' }
+                { cod: 'bc', nome: 'FRA - Brasil Cacau', cor: '#f97316' },
+                { cod: 'cs', nome: 'FRA - Cacau Show', cor: '#8b4513' },
+                { cod: 'kp', nome: 'FRA - Kopenhagen', cor: '#e11d48' },
+                { cod: 'id', nome: 'IND - Industries', cor: '#3b82f6' },
+                { cod: 'pb', nome: 'PLB - PolyBee', cor: '#fbbf24' }
             ];
 
             ids.forEach(franq => {
@@ -677,36 +631,64 @@
                 });
 
                 const ticket = fQtdPed > 0 ? fValPed / fQtdPed : 0;
-                // Conversão por VALOR ($ Venda / $ Orçamento)
                 const conversao = fValOrc > 0 ? (fValPed / fValOrc) * 100 : 0;
 
-                setText(`${franq.cod}-qtd-orc`, formatNumber(fQtdOrc));
-                setText(`${franq.cod}-val-orc`, formatCurrency(fValOrc));
-                setText(`${franq.cod}-val-ped`, formatCurrency(fValPed));
-                setText(`${franq.cod}-ticket`, formatCurrency(ticket));
-                setText(`${franq.cod}-conversao`, conversao.toFixed(1) + '%');
+                const cardHTML = `
+                <div class="franchise-card" style="border-top-color: ${franq.cor}">
+                    <div class="fra-header">
+                        <div class="fra-icon-box" style="border-color:${franq.cor}; color:${franq.cor}">
+                            <span style="font-weight:900; font-size:12px">${franq.cod.toUpperCase()}</span>
+                        </div>
+                        <div class="fra-title">
+                            <h3>${franq.nome.replace('FRA - ','').replace('IND - ','').replace('PLB - ','')}</h3>
+                            <span>${filters.mes}/${filters.ano}</span>
+                        </div>
+                    </div>
+                    <div class="fra-body">
+                        <div class="fra-row"><span class="fra-label">Nº Orçamentos</span><span class="fra-val">${formatNumber(fQtdOrc)}</span></div>
+                        <div class="fra-row"><span class="fra-label">Valor Orç.</span><span class="fra-val">${formatCurrency(fValOrc)}</span></div>
+                        <div class="fra-row"><span class="fra-label">Venda</span><span class="fra-val money">${formatCurrency(fValPed)}</span></div>
+                        <div class="fra-row"><span class="fra-label">Ticket Méd.</span><span class="fra-val">${formatCurrency(ticket)}</span></div>
+                        <div class="fra-row divider">
+                            <span class="fra-label">Conversão ($)</span>
+                            <span class="fra-val" style="color:${conversao >= 30 ? 'var(--status-green)' : 'var(--text-primary)'}">${conversao.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                </div>`;
                 
-                // Cor dinâmica conversão
-                const elConv = document.getElementById(`${franq.cod}-conversao`);
-                if(elConv) elConv.style.color = conversao >= 30 ? 'var(--status-green)' : 'var(--text-primary)';
+                container.innerHTML += cardHTML;
             });
         }
 
         function updateGauge(ano) {
-            // Soma vendas de TODO o ano filtrado
+            // Busca a meta no CONFIG ou usa default
+            const metaDoAno = CONFIG.METAS_ANUAIS[ano] || 9000000;
+
+            // Soma vendas do ano todo
             const dadosAno = allData.filter(r => String(r[COLS.ANO]).trim() === ano);
             const totalAno = dadosAno.reduce((acc, r) => acc + parseValue(r[COLS.VALOR_PEDIDOS]), 0);
             
             if(gaugeChart) {
                 gaugeChart.data.datasets[0].needleValue = totalAno;
+                gaugeChart.data.datasets[0].metaTotal = metaDoAno; // Passa a meta correta pro plugin
+                
+                // Recalcula os pedaços do gráfico proporcionalmente à meta nova
+                // 15% - 35% - 35% - 15%
+                const p1 = metaDoAno * 0.15;
+                const p2 = metaDoAno * 0.35;
+                const p3 = metaDoAno * 0.35;
+                const p4 = metaDoAno * 0.15;
+                gaugeChart.data.datasets[0].data = [p1, p2, p3, p4];
+                
                 gaugeChart.update();
             }
+            
             setText('gauge-valor-anual', formatCurrency(totalAno));
-            const pct = (totalAno / CONFIG.META_ANUAL) * 100;
+            const pct = (totalAno / metaDoAno) * 100;
             setText('gauge-percent', pct.toFixed(1) + '%');
         }
 
-        // === HELPERS ===
+        // === 8. HELPERS ===
         function csvToArray(text){
             const lines = text.split(/\r?\n/).filter(l => l.length>0);
             return lines.map(line => {
@@ -732,7 +714,7 @@
         function setText(id, txt){ const el = document.getElementById(id); if(el) el.textContent = txt; }
         function normalizarMes(m){ const n=parseInt(m,10); return isNaN(n)?'01':String(n).padStart(2,'0'); }
 
-        // === CONTROLES (Filtro, Timer, Tema) ===
+        // === 9. CONTROLES ===
         function getCurrentFilters(){
             return {
                 ano: document.getElementById('filterAno').value,
@@ -744,7 +726,7 @@
             const selAno = document.getElementById('filterAno');
             const selMes = document.getElementById('filterMes');
             
-            [2024, 2025, 2026].forEach(a => {
+            [2024, 2025, 2026, 2027].forEach(a => {
                 let opt = new Option(a, a);
                 if(a === new Date().getFullYear()) opt.selected = true;
                 selAno.add(opt);
@@ -761,41 +743,40 @@
         function toggleFilterMenu(){ document.getElementById('filter-menu').classList.toggle('active'); }
         function applyFilters(){ updateDashboard(); toggleFilterMenu(); }
 
-        // Inicializa Velocímetro
         function initGauge(){
             const ctx = document.getElementById('gaugeChart').getContext('2d');
+            // Valores iniciais dummy, serão atualizados no updateGauge
             gaugeChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: CONFIG.TRIMESTRES_LABELS,
+                    labels: ['1º Tri', '2º Tri', '3º Tri', '4º Tri'],
                     datasets: [{
-                        data: CONFIG.TRIMESTRES_VALORES,
+                        data: [1, 1, 1, 1], // Placeholder
                         backgroundColor: ['#334155', '#475569', '#64748b', '#94a3b8'],
-                        borderWidth: 2,
-                        borderColor: '#1a1640', // Cor do fundo para separar
-                        cutout: '75%',
+                        borderWidth: 0,
+                        cutout: '80%', // Mais fino
                         circumference: 180,
                         rotation: -90,
-                        needleValue: 0
+                        needleValue: 0,
+                        metaTotal: 1
                     }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    layout: { padding: { bottom: 0 } },
+                    layout: { padding: { bottom: 0, left:0, right:0, top:0 } },
                     plugins: { legend: {display:false}, tooltip: {enabled:false} }
                 },
                 plugins: [gaugeNeedle]
             });
         }
 
-        // Timer e Preferences
+        // Timer
         function loadSettings(){
             const savedTime = localStorage.getItem('dash_refresh_sec');
             if(savedTime) {
                 secondsLeft = parseInt(savedTime);
                 document.getElementById('refreshSelect').value = savedTime;
             }
-            
             const savedTheme = localStorage.getItem('dash_theme');
             if(savedTheme === 'light') toggleTheme(true);
         }
@@ -843,7 +824,6 @@
                 icon.classList.replace('ph-sun', 'ph-moon');
                 localStorage.setItem('dash_theme', 'dark');
             }
-            // Atualiza cor da agulha se gráfico existir
             if(gaugeChart) gaugeChart.update();
         }
     </script>
