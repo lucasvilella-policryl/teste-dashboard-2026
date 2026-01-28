@@ -13,14 +13,14 @@
     <style>
         /* === VARIÁVEIS DE TEMA === */
         :root {
-            /* Padrão DARK (Ajustado para o tom do seu print) */
-            --bg-app: #12122b;       /* Fundo bem escuro */
-            --bg-header: #1a1640;    /* Header Roxo Escuro */
-            --bg-card: #201c4e;      /* Cards Roxo/Azul */
-            --bg-card-border: #363275; /* Bordas sutis */
+            /* Palette Dark baseada nas referências */
+            --bg-app: #12122b;       /* Fundo profundo */
+            --bg-header: #1a1640;    /* Roxo escuro */
+            --bg-card: #201c4e;      /* Azul/Roxo cards */
+            --bg-card-border: #363275; 
             
             --text-primary: #ffffff;
-            --text-secondary: #a5b4fc; /* Um lilás claro para textos secundários */
+            --text-secondary: #a5b4fc; 
             --accent: #6366f1; 
             
             --status-blue: #3b82f6;
@@ -60,17 +60,18 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 25px; /* Mais espaço entre as linhas */
+            gap: 25px;
             height: 100vh;
         }
 
-        /* === HEADER (Ajustado altura para o Gauge) === */
+        /* === HEADER CORRIGIDO === */
         .top-bar {
             background: var(--bg-header);
             border-radius: var(--radius);
             border: 1px solid var(--bg-card-border);
             padding: 0 30px;
-            height: 200px; /* Aumentei para caber o velocímetro confortavelmente */
+            /* Aumentei a altura para caber o gráfico sem cortar */
+            height: 220px; 
             display: grid;
             grid-template-columns: 25% 50% 25%;
             align-items: center;
@@ -84,27 +85,28 @@
         .brand-text h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: 1px; line-height: 1; }
         .brand-text span { font-size: 0.8rem; color: var(--text-secondary); display: block; margin-top: 5px; }
 
-        /* Gauge Area (CORRIGIDO POSICIONAMENTO) */
+        /* Gauge Area (Velocímetro) */
         .gauge-container {
             position: relative;
             height: 100%;
             width: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end; /* Joga o gráfico para baixo */
+            justify-content: flex-end; 
             align-items: center;
-            padding-bottom: 15px;
+            padding-bottom: 20px;
         }
         
-        /* Canvas wrapper para controlar tamanho */
+        /* Wrapper para forçar tamanho do canvas e não estourar */
         .canvas-wrapper {
             position: relative;
-            height: 140px; /* Altura fixa para o gráfico */
-            width: 280px;  /* Largura fixa proporcional */
+            height: 140px; 
+            width: 280px;  
         }
 
         .gauge-overlay {
-            margin-top: -30px; /* Sobe o texto para perto do arco */
+            /* Ajustado para não sobrepor a agulha */
+            margin-top: -10px; 
             text-align: center;
             z-index: 10;
         }
@@ -127,7 +129,6 @@
             height: 100%;
         }
 
-        /* Botão Tema */
         .btn-icon {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--bg-card-border);
@@ -141,12 +142,11 @@
         }
         .btn-icon:hover { background: var(--accent); color: white; border-color: var(--accent); }
 
-        /* Timer e Filtros alinhados verticalmente */
         .controls-column {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
-            gap: 15px;
+            gap: 12px;
         }
 
         .timer-display {
@@ -154,9 +154,10 @@
             font-size: 0.9rem;
             color: var(--text-secondary);
             text-align: right;
+            margin-right: 5px;
         }
         
-        /* Selects Bonitos */
+        /* Selects Customizados */
         select.custom-select {
             background: var(--bg-app);
             border: 1px solid var(--bg-card-border);
@@ -261,10 +262,10 @@
             padding-bottom: 15px; border-bottom: 1px solid var(--bg-card-border);
             margin-bottom: 15px;
         }
-        /* Caixa do ícone agora é vazada (outline) como no print */
+        
         .fra-icon-box {
             width: 40px; height: 40px; border-radius: 8px;
-            border: 2px solid; /* Cor via style */
+            border: 2px solid; 
             display: flex; align-items: center; justify-content: center;
             background: transparent;
         }
@@ -304,8 +305,8 @@
         @media (min-width: 1920px) {
             html { font-size: 20px; } 
             .dashboard-wrapper { padding: 30px; gap: 30px; }
-            .top-bar { height: 220px; }
-            .canvas-wrapper { width: 320px; height: 160px; }
+            .top-bar { height: 260px; } /* Mais altura para TV grande */
+            .canvas-wrapper { width: 360px; height: 180px; }
         }
         
         @media (max-width: 1366px) {
@@ -383,7 +384,7 @@
                     <div style="display:flex; align-items:center; gap:10px;">
                         <span class="timer-display" id="countdown">--:--</span>
                         <select id="refreshSelect" class="custom-select" onchange="updateRefreshTime()">
-                            <option value="30">30 seg</option>
+                            <option value="30">30 seg (Teste)</option>
                             <option value="60">1 min</option>
                             <option value="120">2 min</option>
                             <option value="300">5 min</option>
@@ -445,11 +446,12 @@
         const CONFIG = {
             CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQKstKflONSWvQ6xfVkMdM53mveopLXVGNv9CyQT0kRbjdI7IGIVzvvMPLSXNyQ-xZTQEvDmKr1jI_I/pub?gid=1199309873&single=true&output=csv',
             
-            // Defina aqui as metas para cada ano (Isso alimenta o velocímetro)
+            // AQUI VOCÊ EDITA A META DE CADA ANO
             METAS_ANUAIS: {
                 2024: 8500000,
                 2025: 9000000,
-                2026: 10000000
+                2026: 10000000,
+                2027: 12000000
             }
         };
 
@@ -460,7 +462,7 @@
             QTDE_ORCAMENTOS:6, VALOR_ORCAMENTOS:7, 
             QTDE_PEDIDOS:13, VALOR_PEDIDOS:14, 
             PEDIDOS_ATRASADOS:25, PEDIDOS_A_LIBERAR:27,
-            PEDIDOS_FATURADOS_MES:28, PEDIDOS_EM_CASA: 26 // Ajuste se a coluna for outra
+            PEDIDOS_FATURADOS_MES:28, PEDIDOS_EM_CASA: 26 
         };
 
         // === 3. ESTADO GLOBAL ===
@@ -483,12 +485,14 @@
                 if (percentage > 1) percentage = 1;
                 if (percentage < 0) percentage = 0;
 
+                // Centro do gráfico
                 const cx = width / 2;
-                const cy = height - 5; // Base do arco
+                const cy = height - 5; 
 
+                // Angulo
                 const angle = Math.PI + (percentage * Math.PI); 
 
-                ctx.translate(cx, top + (height / 1.35)); // Ponto de pivô
+                ctx.translate(cx, top + (height / 1.35)); // Pivot Point
                 ctx.rotate(angle);
 
                 // Desenha a Agulha
@@ -541,7 +545,7 @@
             }
         }
 
-        // === 7. LÓGICA PRINCIPAL DE ATUALIZAÇÃO ===
+        // === 7. LÓGICA PRINCIPAL ===
         function updateDashboard() {
             const filters = getCurrentFilters();
             
@@ -564,8 +568,7 @@
                 totalMeta += parseValue(row[COLS.META_MES]);
                 totalVendas += parseValue(row[COLS.VALOR_PEDIDOS]);
                 totalFaturados += parseValue(row[COLS.PEDIDOS_FATURADOS_MES]);
-                // Se não tiver coluna exata para "em casa", usando placeholder
-                // totalEmCasa += parseValue(row[COLS.PEDIDOS_EM_CASA]); 
+                totalEmCasa += parseValue(row[COLS.PEDIDOS_EM_CASA]); 
             });
 
             // KPIs GERAIS (Independente de mês)
@@ -590,8 +593,6 @@
             
             setText('pedidosFaturados', formatNumber(totalFaturados));
             setText('pedidosLiberar', formatNumber(totalLiberar));
-            
-            // Usando Faturados como Em Casa temporariamente se não tiver a coluna, senão use totalEmCasa
             setText('pedidosEmCasa', formatNumber(totalEmCasa)); 
             
             setText('mesRef', `${filters.mes}/${filters.ano}`);
@@ -605,7 +606,7 @@
 
         function updateFranquias(data, filters) {
             const container = document.getElementById('franchise-container');
-            container.innerHTML = ''; // Limpa
+            container.innerHTML = ''; 
 
             const ids = [
                 { cod: 'bc', nome: 'FRA - Brasil Cacau', cor: '#f97316' },
@@ -670,10 +671,9 @@
             
             if(gaugeChart) {
                 gaugeChart.data.datasets[0].needleValue = totalAno;
-                gaugeChart.data.datasets[0].metaTotal = metaDoAno; // Passa a meta correta pro plugin
+                gaugeChart.data.datasets[0].metaTotal = metaDoAno; 
                 
-                // Recalcula os pedaços do gráfico proporcionalmente à meta nova
-                // 15% - 35% - 35% - 15%
+                // Recalcula fatias proporcionais (15% - 35% - 35% - 15%)
                 const p1 = metaDoAno * 0.15;
                 const p2 = metaDoAno * 0.35;
                 const p3 = metaDoAno * 0.35;
@@ -726,12 +726,14 @@
             const selAno = document.getElementById('filterAno');
             const selMes = document.getElementById('filterMes');
             
+            // Popula Anos
             [2024, 2025, 2026, 2027].forEach(a => {
                 let opt = new Option(a, a);
                 if(a === new Date().getFullYear()) opt.selected = true;
                 selAno.add(opt);
             });
             
+            // Popula Meses
             const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
             nomes.forEach((n,i) => {
                 let val = String(i+1).padStart(2,'0');
@@ -745,16 +747,15 @@
 
         function initGauge(){
             const ctx = document.getElementById('gaugeChart').getContext('2d');
-            // Valores iniciais dummy, serão atualizados no updateGauge
             gaugeChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['1º Tri', '2º Tri', '3º Tri', '4º Tri'],
                     datasets: [{
-                        data: [1, 1, 1, 1], // Placeholder
+                        data: [1, 1, 1, 1], // Placeholder, atualiza no updateGauge
                         backgroundColor: ['#334155', '#475569', '#64748b', '#94a3b8'],
                         borderWidth: 0,
-                        cutout: '80%', // Mais fino
+                        cutout: '80%', 
                         circumference: 180,
                         rotation: -90,
                         needleValue: 0,
