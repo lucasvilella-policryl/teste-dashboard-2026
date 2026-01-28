@@ -1,13 +1,13 @@
 :root {
     /* Cores do Tema DARK (Padrão) */
-    --bg-app: #0f0c29;      /* Fundo global bem escuro */
-    --bg-header: #1a1640;   /* Header levemente mais claro */
-    --bg-card: #201c4e;     /* Cor dos cartões (roxo/azul profundo) */
+    --bg-app: #0f0c29;      
+    --bg-header: #1a1640;   
+    --bg-card: #201c4e;     
     --bg-card-border: #363275; 
     
     --text-primary: #ffffff;
     --text-secondary: #94a3b8;
-    --accent: #6366f1;      /* Cor de destaque */
+    --accent: #6366f1;      
     
     --status-blue: #3b82f6;
     --status-orange: #f97316;
@@ -33,11 +33,12 @@ body {
     background-color: var(--bg-app);
     color: var(--text-primary);
     overflow-x: hidden;
+    overflow-y: auto; /* Permite scroll se necessário */
     transition: background 0.3s ease;
 }
 
 .dashboard-wrapper {
-    padding: 2vh 2vw;
+    padding: 1.5vh 1.5vw;
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -48,19 +49,19 @@ body {
 .top-bar {
     background: var(--bg-header);
     border-radius: var(--radius);
-    padding: 15px 30px;
+    padding: 0 30px;
     display: grid;
-    grid-template-columns: 1fr 300px 1fr; /* Esquerda - Centro (Gauge) - Direita */
+    grid-template-columns: 25% 50% 25%; /* Ajuste de alinhamento */
     align-items: center;
     border: 1px solid var(--bg-card-border);
-    height: 180px; /* Altura fixa para caber o gauge */
+    height: 160px; 
     position: relative;
 }
 
 .brand-area { display: flex; gap: 20px; align-items: center; }
-.logo { height: 60px; width: auto; }
-.brand-text h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: 1px; }
-.brand-text span { font-size: 0.9rem; color: var(--text-secondary); }
+.logo { height: 55px; width: auto; }
+.brand-text h1 { font-size: 1.1rem; font-weight: 800; letter-spacing: 1px; }
+.brand-text span { font-size: 0.8rem; color: var(--text-secondary); display: block; margin-top: 4px; }
 
 /* Gauge Centralizado */
 .gauge-container {
@@ -69,16 +70,27 @@ body {
     width: 100%;
     display: flex;
     justify-content: center;
-    align-items: flex-end; /* Joga o gráfico para baixo */
-    padding-bottom: 10px;
+    align-items: flex-end; 
+    padding-bottom: 0; 
 }
+
 .gauge-overlay {
     position: absolute;
-    bottom: 20px;
+    bottom: 5px; /* Ajuste fino para não encavalar na agulha */
+    left: 0; 
+    right: 0;
     text-align: center;
-    display: flex; flex-direction: column;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
 }
-.gauge-value { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); }
+.gauge-value { 
+    font-size: 1.8rem; 
+    font-weight: 800; 
+    color: var(--text-primary); 
+    text-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    line-height: 1.2;
+}
 .gauge-label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; }
 
 /* Controles */
@@ -89,18 +101,24 @@ body {
     border: none; color: #fff;
     width: 40px; height: 40px; border-radius: 50%;
     cursor: pointer; font-size: 1.2rem;
+    transition: background 0.2s;
 }
+.btn-icon:hover { background: rgba(255,255,255,0.2); }
 
 /* Timer */
 .timer-control {
     display: flex; flex-direction: column; align-items: flex-end;
     margin-right: 15px;
 }
+.timer-row { display: flex; gap: 8px; align-items: baseline; }
+.timer-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; }
 .timer-display { font-family: monospace; font-size: 1.2rem; font-weight: 700; color: var(--accent); }
+
 .timer-settings select {
     background: transparent; border: none; color: var(--text-secondary);
-    font-size: 0.8rem; cursor: pointer; text-align: right;
+    font-size: 0.8rem; cursor: pointer; text-align: right; margin-top: 2px;
 }
+.timer-settings select:focus { outline: none; color: var(--accent); }
 
 /* Filtro & Dropdown */
 .filter-wrapper { position: relative; }
@@ -126,7 +144,7 @@ body {
     border-radius: 12px;
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     width: 300px;
-    display: none; /* Escondido por padrão */
+    display: none; 
     z-index: 100;
     flex-direction: column; gap: 15px;
 }
@@ -141,6 +159,7 @@ body {
     background: var(--accent); border: none; padding: 10px;
     color: white; font-weight: bold; border-radius: 6px; cursor: pointer;
 }
+.btn-apply:hover { opacity: 0.9; }
 
 /* === KPI ROW === */
 .kpi-row {
@@ -160,7 +179,7 @@ body {
     box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
 
-.kpi-main h2 { font-size: 1.8rem; font-weight: 800; margin: 5px 0; }
+.kpi-main h2 { font-size: 1.6rem; font-weight: 800; margin: 5px 0; }
 .kpi-main.highlight h2 { color: var(--status-green); }
 
 .kpi-status { border-top-width: 4px; }
@@ -168,45 +187,59 @@ body {
 .kpi-status.status-orange { border-top-color: var(--status-orange); }
 .kpi-status.status-green { border-top-color: var(--status-green); }
 
-.kpi-status h2 { font-size: 2.5rem; line-height: 1; }
+.kpi-status h2 { font-size: 2.2rem; line-height: 1; }
 
-.card-label { font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
-.card-sub { font-size: 0.8rem; color: var(--text-secondary); opacity: 0.8; }
+.card-label { font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
+.card-sub { font-size: 0.75rem; color: var(--text-secondary); opacity: 0.8; }
 
-/* === FRANCHISE GRID === */
+/* === FRANCHISE GRID (Ajustado para TV) === */
 .franchise-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 1.5vw;
-    flex: 1; /* Ocupa o resto da altura */
-    align-content: start;
+    flex: 1; /* Ocupa todo o espaço vertical restante */
+    height: 100%;
 }
 
 .franchise-card {
     background: var(--bg-card);
     border: 1px solid var(--bg-card-border);
     border-radius: var(--radius);
-    padding: 15px;
-    display: flex; flex-direction: column; gap: 10px;
+    padding: 20px 15px;
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between; /* Espalha o conteúdo para preencher o card */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    min-height: 280px; /* Garante presença na tela */
 }
 
 .fra-header {
     display: flex; align-items: center; gap: 10px;
-    padding-bottom: 10px; border-bottom: 1px solid var(--bg-card-border);
-    margin-bottom: 5px;
+    padding-bottom: 15px; border-bottom: 1px solid var(--bg-card-border);
+    margin-bottom: 10px;
 }
 .fra-icon {
-    width: 30px; height: 30px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2);
+    width: 36px; height: 36px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
 }
-.fra-title h3 { font-size: 0.9rem; font-weight: 700; line-height: 1.1; }
-.fra-title span { font-size: 0.7rem; color: var(--text-secondary); }
+.fra-title h3 { font-size: 1rem; font-weight: 700; line-height: 1.1; }
+.fra-title span { font-size: 0.75rem; color: var(--text-secondary); }
+
+.fra-body {
+    display: flex; flex-direction: column; gap: 12px;
+}
 
 .fra-row { display: flex; justify-content: space-between; align-items: baseline; }
-.fra-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; }
-.fra-val { font-size: 0.9rem; font-weight: 600; }
-.fra-val.money { color: var(--status-green); font-weight: 700; font-size: 1rem; }
+.fra-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
+.fra-val { font-size: 1rem; font-weight: 600; }
+.fra-val.money { color: var(--status-green); font-weight: 700; font-size: 1.2rem; }
 
-/* Responsividade TV */
+/* Responsividade para TV Grande (Zoom automático) */
 @media (min-width: 1920px) {
-    html { font-size: 18px; } /* Aumenta tudo em telas grandes */
+    html { font-size: 22px; } /* Aumenta tudo proporcionalmente */
+}
+
+@media (max-width: 1366px) {
+    html { font-size: 14px; }
+    .kpi-row { grid-template-columns: repeat(3, 1fr); }
+    .franchise-grid { overflow-y: auto; }
 }
