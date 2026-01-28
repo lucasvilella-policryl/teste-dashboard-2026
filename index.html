@@ -198,7 +198,7 @@
         .filter-dropdown.active { display: flex; }
         .filter-group label { display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 5px; font-weight: 600; }
         
-        /* Container dos botões do filtro */
+        /* Ações do Filtro */
         .filter-actions {
             display: flex;
             gap: 10px;
@@ -208,7 +208,7 @@
         .btn-apply {
             background: var(--accent); border: none; padding: 10px;
             color: white; font-weight: bold; border-radius: 6px; cursor: pointer;
-            flex: 1; /* Ocupa metade */
+            flex: 1; 
             font-size: 0.85rem;
         }
         .btn-apply:hover { opacity: 0.9; }
@@ -218,11 +218,11 @@
             border: 1px solid var(--bg-card-border); 
             padding: 10px;
             color: var(--text-secondary); font-weight: 600; border-radius: 6px; cursor: pointer;
-            flex: 1; /* Ocupa metade */
+            flex: 1; 
             font-size: 0.85rem;
             transition: all 0.2s;
         }
-        .btn-clear:hover { border-color: var(--status-red); color: var(--status-red); }
+        .btn-clear:hover { border-color: var(--status-red); color: var(--status-red); background: rgba(239, 68, 68, 0.1); }
 
         /* === KPIS ROW === */
         .kpi-row {
@@ -362,13 +362,13 @@
 
             <div class="controls-area">
                 
-                <button class="btn-icon" onclick="toggleTheme()" title="Alternar Tema">
+                <button class="btn-icon" type="button" onclick="toggleTheme()" title="Alternar Tema">
                     <i class="ph ph-moon" id="theme-icon"></i>
                 </button>
 
                 <div class="controls-column">
                     <div class="filter-wrapper">
-                        <button class="btn-filter" onclick="toggleFilterMenu()">
+                        <button class="btn-filter" type="button" onclick="toggleFilterMenu()">
                             FILTRAR <i class="ph ph-caret-down"></i>
                         </button>
                         
@@ -395,8 +395,8 @@
                             </div>
                             
                             <div class="filter-actions">
-                                <button class="btn-clear" onclick="clearFilters()">Limpar</button>
-                                <button class="btn-apply" onclick="applyFilters()">Aplicar</button>
+                                <button class="btn-clear" type="button" onclick="clearFilters()">Limpar</button>
+                                <button class="btn-apply" type="button" onclick="applyFilters()">Aplicar</button>
                             </div>
                         </div>
                     </div>
@@ -470,13 +470,12 @@
             METAS_POR_ANO: {
                 "2024": {
                     total: 8500000.00,
-                    // [1ºTrim, 2ºTrim, 3ºTrim, 4ºTrim]
                     trimestres: [1275000, 2975000, 2975000, 1275000]
                 },
                 "2025": {
-                    // Valor exato solicitado: 7.897.826,66
+                    // Valor exato: 7.897.826,66
                     total: 7897826.66,
-                    // Divisão proporcional para fechar a conta (15% | 35% | 35% | 15%)
+                    // Divisão proporcional aproximada
                     trimestres: [1184674.00, 2764239.33, 2764239.33, 1184674.00]
                 },
                 "2026": {
@@ -502,7 +501,7 @@
         let refreshTimer = null;
         let secondsLeft = 600;
 
-        // === 4. PLUGIN VELOCÍMETRO (Agulha) ===
+        // === 4. PLUGIN VELOCÍMETRO ===
         const gaugeNeedle = {
             id: 'gaugeNeedle',
             afterDatasetDraw(chart) {
@@ -523,7 +522,6 @@
                 ctx.translate(cx, top + (height / 1.35)); 
                 ctx.rotate(angle);
 
-                // Desenha a Agulha
                 ctx.beginPath();
                 ctx.moveTo(0, -4);
                 ctx.lineTo(height / 1.6, 0); 
@@ -531,7 +529,6 @@
                 ctx.fillStyle = document.body.classList.contains('light-theme') ? '#333' : '#fff';
                 ctx.fill();
                 
-                // Base da agulha
                 ctx.beginPath();
                 ctx.arc(0, 0, 6, 0, Math.PI * 2);
                 ctx.fillStyle = '#6366f1';
@@ -607,7 +604,7 @@
             const totalAtraso = dadosGerais.reduce((acc, row) => acc + parseValue(row[COLS.PEDIDOS_ATRASADOS]), 0);
             const totalLiberar = dadosGerais.reduce((acc, row) => acc + parseValue(row[COLS.PEDIDOS_A_LIBERAR]), 0);
 
-            // META DIÁRIA CUMULATIVA
+            // META DIÁRIA
             const diasNoMes = new Date(filters.ano, filters.mes, 0).getDate();
             const hoje = new Date();
             const isMesAtual = (parseInt(filters.mes) === (hoje.getMonth() + 1)) && (parseInt(filters.ano) === hoje.getFullYear());
@@ -618,17 +615,15 @@
             setText('metaMes', formatCurrency(totalMeta));
             setText('metaDia', formatCurrency(metaDiaAcumulada));
             setText('valorVendas', formatCurrency(totalVendas));
-            
             setText('pedidosFaturados', formatNumber(totalFaturados));
             setText('pedidosLiberar', formatNumber(totalLiberar));
             setText('pedidosEmCasa', formatNumber(totalEmCasa)); 
-            
             setText('mesRef', `${filters.mes}/${filters.ano}`);
 
             // RENDERIZA FRANQUIAS
             updateFranquias(allData, filters);
 
-            // ATUALIZA VELOCÍMETRO (Com lógica de ano)
+            // ATUALIZA VELOCÍMETRO
             updateGauge(filters.ano);
         }
 
@@ -690,24 +685,18 @@
         }
 
         function updateGauge(ano) {
-            // 1. Busca configuração do ano específico
             const configAno = CONFIG.METAS_POR_ANO[ano];
-            
-            // 2. Se não existir configuração pro ano, usa um fallback (2025)
-            const metaTotal = configAno ? configAno.total : 9000000;
-            const fatias = configAno ? configAno.trimestres : [2250000, 2250000, 2250000, 2250000];
+            // Se não tiver meta configurada, fallback para 2025
+            const metaTotal = configAno ? configAno.total : 7897826.66;
+            const fatias = configAno ? configAno.trimestres : [1184674, 2764239, 2764239, 1184674];
 
-            // 3. Soma vendas reais do ano
             const dadosAno = allData.filter(r => String(r[COLS.ANO]).trim() === ano);
             const totalVendido = dadosAno.reduce((acc, r) => acc + parseValue(r[COLS.VALOR_PEDIDOS]), 0);
             
             if(gaugeChart) {
                 gaugeChart.data.datasets[0].needleValue = totalVendido;
                 gaugeChart.data.datasets[0].metaTotal = metaTotal;
-                
-                // 4. Atualiza os gomos (slices) com os valores configurados
                 gaugeChart.data.datasets[0].data = fatias;
-                
                 gaugeChart.update();
             }
             
@@ -716,7 +705,82 @@
             setText('gauge-percent', pct.toFixed(1) + '%');
         }
 
-        // === 8. HELPERS ===
+        // === 8. CONTROLES (COM CORREÇÃO DE LIMPAR) ===
+        function getCurrentFilters(){
+            return {
+                ano: document.getElementById('filterAno').value,
+                mes: document.getElementById('filterMes').value,
+                linha: document.getElementById('filterLinha').value
+            };
+        }
+        function initFilters(){
+            const selAno = document.getElementById('filterAno');
+            const selMes = document.getElementById('filterMes');
+            
+            [2024, 2025, 2026, 2027].forEach(a => {
+                let opt = new Option(a, a);
+                if(a === new Date().getFullYear()) opt.selected = true;
+                selAno.add(opt);
+            });
+            
+            const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+            nomes.forEach((n,i) => {
+                let val = String(i+1).padStart(2,'0');
+                let opt = new Option(n, val);
+                if((i+1) === (new Date().getMonth() + 1)) opt.selected = true;
+                selMes.add(opt);
+            });
+        }
+        function toggleFilterMenu(){ 
+            document.getElementById('filter-menu').classList.toggle('active'); 
+        }
+        
+        function applyFilters(){ 
+            updateDashboard(); 
+            document.getElementById('filter-menu').classList.remove('active'); 
+        }
+
+        // FUNÇÃO LIMPAR CORRIGIDA
+        function clearFilters() {
+            const now = new Date();
+            const currentYear = String(now.getFullYear());
+            const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+
+            document.getElementById('filterAno').value = currentYear;
+            document.getElementById('filterMes').value = currentMonth;
+            document.getElementById('filterLinha').value = 'todas';
+            
+            updateDashboard();
+            document.getElementById('filter-menu').classList.remove('active');
+        }
+
+        function initGauge(){
+            const ctx = document.getElementById('gaugeChart').getContext('2d');
+            gaugeChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['1º Tri', '2º Tri', '3º Tri', '4º Tri'],
+                    datasets: [{
+                        data: [1, 1, 1, 1], // Placeholder
+                        backgroundColor: ['#334155', '#475569', '#64748b', '#94a3b8'],
+                        borderWidth: 0,
+                        cutout: '80%', 
+                        circumference: 180,
+                        rotation: -90,
+                        needleValue: 0,
+                        metaTotal: 1
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    layout: { padding: { bottom: 0, left:0, right:0, top:0 } },
+                    plugins: { legend: {display:false}, tooltip: {enabled:false} }
+                },
+                plugins: [gaugeNeedle]
+            });
+        }
+
+        // === 9. HELPERS ===
         function csvToArray(text){
             const lines = text.split(/\r?\n/).filter(l => l.length>0);
             return lines.map(line => {
@@ -741,79 +805,6 @@
         function formatNumber(v){ return new Intl.NumberFormat('pt-BR').format(v||0); }
         function setText(id, txt){ const el = document.getElementById(id); if(el) el.textContent = txt; }
         function normalizarMes(m){ const n=parseInt(m,10); return isNaN(n)?'01':String(n).padStart(2,'0'); }
-
-        // === 9. CONTROLES ===
-        function getCurrentFilters(){
-            return {
-                ano: document.getElementById('filterAno').value,
-                mes: document.getElementById('filterMes').value,
-                linha: document.getElementById('filterLinha').value
-            };
-        }
-        function initFilters(){
-            const selAno = document.getElementById('filterAno');
-            const selMes = document.getElementById('filterMes');
-            
-            // Popula Anos
-            [2024, 2025, 2026, 2027].forEach(a => {
-                let opt = new Option(a, a);
-                if(a === new Date().getFullYear()) opt.selected = true;
-                selAno.add(opt);
-            });
-            
-            // Popula Meses
-            const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-            nomes.forEach((n,i) => {
-                let val = String(i+1).padStart(2,'0');
-                let opt = new Option(n, val);
-                if((i+1) === (new Date().getMonth() + 1)) opt.selected = true;
-                selMes.add(opt);
-            });
-        }
-        function toggleFilterMenu(){ document.getElementById('filter-menu').classList.toggle('active'); }
-        
-        function applyFilters(){ 
-            updateDashboard(); 
-            toggleFilterMenu(); 
-        }
-
-        // Função Limpar Filtros
-        function clearFilters() {
-            const now = new Date();
-            // Reseta para Data Atual
-            document.getElementById('filterAno').value = now.getFullYear();
-            document.getElementById('filterMes').value = String(now.getMonth() + 1).padStart(2, '0');
-            document.getElementById('filterLinha').value = 'todas';
-            
-            updateDashboard();
-            toggleFilterMenu(); // Fecha o menu
-        }
-
-        function initGauge(){
-            const ctx = document.getElementById('gaugeChart').getContext('2d');
-            gaugeChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['1º Tri', '2º Tri', '3º Tri', '4º Tri'],
-                    datasets: [{
-                        data: [1, 1, 1, 1], // Placeholder, atualiza no updateGauge
-                        backgroundColor: ['#334155', '#475569', '#64748b', '#94a3b8'],
-                        borderWidth: 0,
-                        cutout: '80%', 
-                        circumference: 180,
-                        rotation: -90,
-                        needleValue: 0,
-                        metaTotal: 1
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    layout: { padding: { bottom: 0, left:0, right:0, top:0 } },
-                    plugins: { legend: {display:false}, tooltip: {enabled:false} }
-                },
-                plugins: [gaugeNeedle]
-            });
-        }
 
         // Timer
         function loadSettings(){
